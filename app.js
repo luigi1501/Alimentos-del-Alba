@@ -3,7 +3,6 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
 const dotenv = require('dotenv');
-const qrcode = require('qrcode');
 const multer = require('multer');
 const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode');
@@ -16,7 +15,15 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const db = require('./db/models');
-const { isAuthenticated, isAdmin } = require('./middleware/authMiddleware');
+async function initializeDatabase() {
+    try {
+        console.log('Base de datos inicializada correctamente (o al menos módulos cargados).');
+    } catch (error) {
+        console.error('Error FATAL al inicializar la base de datos:', error);
+        process.exit(1);
+    }
+}
+initializeDatabase(); 
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -54,7 +61,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'supersecretkey',
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }
+    cookie: { secure: process.env.NODE_ENV === 'production' }
 }));
 
 app.use((req, res, next) => {
@@ -93,7 +100,7 @@ app.get('/panel-empleado', isAuthenticated, async (req, res) => {
 
         let qrCodeDataUrl = null;
         if (empleado.qr_code) {
-            qrCodeDataUrl = await qrcode.toDataURL(empleado.qr_code);
+            qrCodeDataUrl = await QRCode.toDataURL(empleado.qr_code);
         }
 
         res.render('panel-empleado', {
@@ -102,11 +109,8 @@ app.get('/panel-empleado', isAuthenticated, async (req, res) => {
         });
     } catch (error) {
         console.error("Error al cargar el panel del empleado:", error);
-        res.render('panel-empleado', {
-            empleado: null,
-            qrCodeUrl: null,
-            message: { type: 'danger', text: 'Error al cargar tus datos. Por favor, intenta iniciar sesión de nuevo.' }
-        });
+        req.session.message = { type: 'danger', text: 'Error al cargar tus datos. Por favor, intenta iniciar sesión de nuevo.' };
+        res.redirect('/auth/login-empleado');
     }
 });
 
@@ -175,17 +179,24 @@ app.get('/empleados/descargar-carnet', isAuthenticated, async (req, res) => {
         doc.moveDown(0.5);
 
         const logoPath = path.join(__dirname, 'public', 'images', 'logo2.jpg');
-        try {
-            doc.image(logoPath, {
-                fit: [60, 60],
-                align: 'center',
-                valign: 'center'
-            });
-            doc.moveDown(0.5);
-        } catch (logoErr) {
-            console.warn('Advertencia: No se pudo incrustar el logo en el PDF:', logoErr.message);
+        if (fs.existsSync(logoPath)) {
+            try {
+                const logoBuffer = fs.readFileSync(logoPath);
+                doc.image(logoBuffer, {
+                    fit: [60, 60],
+                    align: 'center',
+                    valign: 'center'
+                });
+                doc.moveDown(0.5);
+            } catch (logoErr) {
+                console.warn('Advertencia: No se pudo incrustar el logo en el PDF (error de lectura):', logoErr.message);
+                doc.text('Logo no disponible', { align: 'center' }).moveDown();
+            }
+        } else {
+            console.warn(`Advertencia: El logo no existe en la ruta: ${logoPath}.`);
             doc.text('Logo no disponible', { align: 'center' }).moveDown();
         }
+
 
         let imageBuffer;
         let finalProfilePicPath;
@@ -197,11 +208,11 @@ app.get('/empleados/descargar-carnet', isAuthenticated, async (req, res) => {
         }
 
         if (!fs.existsSync(finalProfilePicPath)) {
-            console.error(`Advertencia: La foto de perfil no existe en la ruta: ${finalProfilePicPath}. Usando la imagen por defecto.`);
+            console.warn(`Advertencia: La foto de perfil no existe en la ruta: ${finalProfilePicPath}. Usando la imagen por defecto.`);
             finalProfilePicPath = path.join(__dirname, 'public', 'images', 'default-profile-pic.png');
             if (!fs.existsSync(finalProfilePicPath)) {
-                 console.error(`ERROR FATAL: La imagen por defecto tampoco existe: ${finalProfilePicPath}`);
-                 throw new Error("No se encontró la foto de perfil ni la imagen por defecto.");
+                console.error(`ERROR FATAL: La imagen por defecto tampoco existe: ${finalProfilePicPath}`);
+                throw new Error("No se encontró la foto de perfil ni la imagen por defecto.");
             }
         }
 
@@ -219,7 +230,7 @@ app.get('/empleados/descargar-carnet', isAuthenticated, async (req, res) => {
             doc.moveDown(5);
         } catch (imageErr) {
             console.error('Error al incrustar la foto de perfil en el PDF (con Jimp):', imageErr.message);
-            doc.text('Foto no disponible', { align: 'center' }).moveDown();
+            doc.text('Foto de perfil no disponible', { align: 'center' }).moveDown();
             doc.moveDown(2);
         }
 
@@ -257,9 +268,72 @@ app.get('/empleados/descargar-carnet', isAuthenticated, async (req, res) => {
             type: 'danger',
             text: 'Error al generar el carnet. Inténtalo de nuevo.'
         };
+        res.status(500).redirect('/panel-empleado');
+    }
+});
+
+app.post('/registrar-entrada', isAuthenticated, async (req, res) => {
+    try {
+        const empleadoId = req.session.userId;
+        const horaEntrada = new Date(); 
+        await db.crearRegistroHora(empleadoId, horaEntrada.toISOString(), null);
+
+        req.session.message = { type: 'success', text: 'Entrada registrada con éxito.' };
+        res.redirect('/panel-empleado');
+    } catch (error) {
+        console.error('Error al registrar entrada:', error);
+        req.session.message = { type: 'danger', text: 'Error al registrar entrada. Inténtalo de nuevo.' };
         res.redirect('/panel-empleado');
     }
 });
+
+app.post('/registrar-salida', isAuthenticated, async (req, res) => {
+    try {
+        const empleadoId = req.session.userId;
+        const ultimoRegistro = await db.getUltimoRegistroEntrada(empleadoId);
+
+        if (!ultimoRegistro || ultimoRegistro.horaSalida) {
+            req.session.message = { type: 'danger', text: 'No hay una entrada pendiente para registrar salida.' };
+            return res.redirect('/panel-empleado');
+        }
+
+        const horaSalida = new Date();
+        await db.actualizarRegistroSalida(ultimoRegistro.id, horaSalida.toISOString());
+
+        req.session.message = { type: 'success', text: 'Salida registrada con éxito.' };
+        res.redirect('/panel-empleado');
+    } catch (error) {
+        console.error('Error al registrar salida:', error);
+        req.session.message = { type: 'danger', text: 'Error al registrar salida. Inténtalo de nuevo.' };
+        res.redirect('/panel-empleado');
+    }
+});
+
+app.get('/registros-empleado', isAuthenticated, async (req, res) => {
+    try {
+        const empleadoId = req.session.userId;
+        const registros = await db.getRegistrosPorEmpleadoId(empleadoId);
+        const formattedRegistros = registros.map(registro => {
+            const fecha = new Date(registro.fecha).toLocaleDateString('es-VE', { timeZone: 'America/Caracas' });
+            const horaEntrada = new Date(registro.horaEntrada).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'America/Caracas' });
+            const horaSalida = registro.horaSalida ? new Date(registro.horaSalida).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'America/Caracas' }) : 'N/A';
+
+            return {
+                ...registro,
+                fechaFormatted: fecha,
+                horaEntradaFormatted: horaEntrada,
+                horaSalidaFormatted: horaSalida
+            };
+        });
+
+        res.render('registros-empleado', { registros: formattedRegistros });
+    } catch (error) {
+        console.error('Error al obtener registros de empleado:', error);
+        req.session.message = { type: 'danger', text: 'Error al cargar los registros de hora.' };
+        res.redirect('/panel-empleado');
+    }
+});
+
 
 app.use((req, res, next) => {
     res.status(404).send("Lo siento, no puedo encontrar eso!");

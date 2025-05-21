@@ -179,8 +179,9 @@ module.exports = {
 
     async registrarEntrada(empleadoId) {
         return new Promise((resolve, reject) => {
-            const fechaHoy = new Date().toISOString().split('T')[0];
-            const horaActual = new Date().toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            const now = new Date();
+            const fechaHoy = now.toISOString().split('T')[0];
+            const horaActualUTC = now.toISOString();
 
             db.get(querys.getEntradaPendiente, [empleadoId, fechaHoy], (err, row) => {
                 if (err) {
@@ -192,7 +193,7 @@ module.exports = {
 
                 db.run(
                     querys.insertarAsistenciaEntrada,
-                    [empleadoId, fechaHoy, horaActual],
+                    [empleadoId, fechaHoy, horaActualUTC],
                     function(err) {
                         if (err) {
                             return reject(err);
@@ -206,12 +207,13 @@ module.exports = {
 
     async registrarSalida(empleadoId) {
         return new Promise((resolve, reject) => {
-            const fechaHoy = new Date().toISOString().split('T')[0];
-            const horaActual = new Date().toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            const now = new Date();
+            const fechaHoy = now.toISOString().split('T')[0];
+            const horaActualUTC = now.toISOString();
 
             db.run(
                 querys.actualizarAsistenciaSalida,
-                [horaActual, empleadoId, fechaHoy],
+                [horaActualUTC, empleadoId, fechaHoy],
                 function(err) {
                     if (err) {
                         return reject(err);
