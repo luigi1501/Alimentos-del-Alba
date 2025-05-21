@@ -3,6 +3,8 @@ const router = express.Router();
 const db = require('../db/models');
 require('dotenv').config();
 const isAuthenticated = require('../middleware/authMiddleware');
+const attendanceController = require('../controllers/attendanceController');
+
 
 router.get('/', (req, res) => {
     res.render('index');
@@ -39,7 +41,7 @@ router.get('/tabGeneral', (req, res) => {
                 res.render('tabGeneral', { empleados: empleados });
             })
             .catch(err => {
-                console.error("Error al obtener empleados:", err);
+                console.error("Error al obtener empleados para /tabGeneral:", err);
                 res.render('tabGeneral', { empleados: [] });
             });
     } else {
@@ -48,8 +50,10 @@ router.get('/tabGeneral', (req, res) => {
 });
 
 router.post('/guardarEmpleado', (req, res) => {
+    if (!req.session || !req.session.loggedIn || !req.session.isAdmin) {
+        return res.redirect('/login');
+    }
     const { usuario, nombre, apellido, cedula, cargo, departamento, telefono, correo } = req.body;
-
     db.registrarEmpleado(usuario, null, nombre, apellido, parseInt(cedula), cargo, departamento, parseInt(telefono), correo)
         .then(() => {
             console.log('Empleado guardado correctamente');
@@ -129,5 +133,14 @@ router.get('/deleteempleado/:id', (req, res) => {
         res.redirect('/login');
     }
 });
+
+router.get('/escanear-asistencia', function(req, res, next) {
+    res.render('escanear-asistencia', { title: 'Escanear Asistencia' });
+});
+
+router.post('/registrar-asistencia', attendanceController.registrarAsistenciaQR);
+
+router.get('/historial-asistencia', attendanceController.mostrarHistorialAsistencia);
+
 
 module.exports = router;

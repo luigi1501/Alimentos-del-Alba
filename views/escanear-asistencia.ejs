@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alimentos del Alba - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="../stylesheets/escanear-asistencia.css">
+    <link rel="shortcut icon" href="../images/logo2.jpg" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+            <div class="col-md-3 mb-2 mb-md-0">
+                <a href="/admin" class="d-inline-flex link-body-emphasis text-decoration-none">
+                    Volver al Panel
+                </a>
+            </div>
+            <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+                <li class="nav-link px-2 link-secondary">Escanear Asistencia</li>
+            </ul>
+            <div class="col-md-3 text-end">
+                <a href="/" class="btn btn-danger">Salir</a>
+            </div>
+        </header>
+
+        <h1>Escanear Código QR de Asistencia</h1>
+
+        <div id="scan-button-container">
+            <button id="start-scan-button" class="btn btn-primary btn-lg">Iniciar Escaneo</button>
+        </div>
+
+        <div id="video-container">
+            <video id="video"></video>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div id="resultado"></div>
+
+        <div id="action-buttons">
+            <button id="volver-panel-button" class="btn btn-secondary">Volver al Panel</button>
+            <button id="registrar-entrada-button" class="btn btn-success">Registrar Entrada</button>
+            <button id="registrar-salida-button" class="btn btn-warning">Registrar Salida</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const videoContainer = document.getElementById('video-container');
+        const canvas = document.getElementById('canvas');
+        const resultadoDiv = document.getElementById('resultado');
+        const canvasContext = canvas.getContext('2d');
+        const startScanButton = document.getElementById('start-scan-button');
+        const actionButtonsDiv = document.getElementById('action-buttons');
+        const volverPanelButton = document.getElementById('volver-panel-button');
+        const registrarEntradaButton = document.getElementById('registrar-entrada-button');
+        const registrarSalidaButton = document.getElementById('registrar-salida-button');
+
+        let scanning = false;
+        let scannedCode = null;
+
+        startScanButton.addEventListener('click', () => {
+            startScan();
+            startScanButton.style.display = 'none';
+            videoContainer.style.display = 'block';
+            resultadoDiv.innerText = '';
+            actionButtonsDiv.style.display = 'none';
+            scannedCode = null;
+        });
+
+        volverPanelButton.addEventListener('click', () => {
+            window.location.href = '/admin';
+        });
+
+        registrarEntradaButton.addEventListener('click', () => {
+            if (scannedCode) {
+                registrarAsistencia('entrada', scannedCode);
+            } else {
+                resultadoDiv.innerText = 'No se ha escaneado ningún código QR.';
+                resultadoDiv.classList.add('error');
+            }
+        });
+
+        registrarSalidaButton.addEventListener('click', () => {
+            if (scannedCode) {
+                registrarAsistencia('salida', scannedCode);
+            } else {
+                resultadoDiv.innerText = 'No se ha escaneado ningún código QR.';
+                resultadoDiv.classList.add('error');
+            }
+        });
+
+        function startScan() {
+            scanning = true;
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    video.play();
+                    requestAnimationFrame(scanQRCode);
+                })
+                .catch(function(err) {
+                    resultadoDiv.innerText = 'Error al acceder a la cámara: ' + err;
+                    resultadoDiv.classList.add('error');
+                    console.error('Error al acceder a la cámara:', err);
+                    startScanButton.style.display = 'block';
+                    videoContainer.style.display = 'none';
+                });
+        }
+
+        function stopScan() {
+            scanning = false;
+            if (video.srcObject) {
+                const stream = video.srcObject;
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+            }
+        }
+
+        function scanQRCode() {
+            if (!scanning) {
+                return;
+            }
+
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.height = video.videoHeight;
+                canvas.width = video.videoWidth;
+                canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                if (code) {
+                    stopScan();
+                    scannedCode = code.data;
+                    resultadoDiv.innerText = 'Código QR detectado.';
+                    resultadoDiv.classList.remove('error');
+                    actionButtonsDiv.style.display = 'flex';
+                    startScanButton.style.display = 'none';
+                    videoContainer.style.display = 'none';
+                } else {
+                    requestAnimationFrame(scanQRCode);
+                }
+            } else {
+                requestAnimationFrame(scanQRCode);
+            }
+        }
+
+        function registrarAsistencia(tipo, qrCode) {
+            resultadoDiv.innerText = `Registrando ${tipo}...`;
+            resultadoDiv.classList.remove('error');
+
+            fetch('/registrar-asistencia', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ qr_code: qrCode, tipo: tipo })
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultadoDiv.innerText = data.message || `Asistencia de ${tipo} registrada.`;
+                if (data.error) {
+                    resultadoDiv.classList.add('error');
+                } else {
+                    resultadoDiv.classList.remove('error');
+                }
+                actionButtonsDiv.style.display = 'none';
+                startScanButton.style.display = 'block';
+                videoContainer.style.display = 'none';
+                scannedCode = null;
+            })
+            .catch(error => {
+                resultadoDiv.innerText = 'Error al registrar la asistencia: ' + error;
+                resultadoDiv.classList.add('error');
+                console.error('Error al enviar la asistencia:', error);
+                actionButtonsDiv.style.display = 'none';
+                startScanButton.style.display = 'block';
+                videoContainer.style.display = 'none';
+                scannedCode = null;
+            });
+        }
+    </script>
+</body>
+</html>

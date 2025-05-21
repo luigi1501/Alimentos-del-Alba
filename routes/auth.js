@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { registrarEmpleado, obtenerEmpleadoPorUsuario, verificarPassword, getEmpleadoPorId } = require('../db/models');
-const QRCode = require('qrcode');
+const { registrarEmpleado, obtenerEmpleadoPorUsuario, verificarPassword, getEmpleadoPorId, updateempleados } = require('../db/models');
 const db = require('../db/connection');
+const { isAuthenticated, isAdmin } = require('../middleware/authMiddleware');
 
 router.get('/login-empleado', (req, res) => {
+    if (req.session && req.session.userId) {
+        return res.redirect('/panel-empleado');
+    }
     res.render('login-empleado', { error: req.query.error });
 });
 
@@ -20,11 +23,10 @@ router.post('/login-empleado', async (req, res) => {
 
             if (passwordValido) {
                 console.log('Inicio de sesión exitoso para:', usuario);
-                res.render('panel-empleado', {
-                    userId: empleado.id,
-                    nombreEmpleado: empleado.nombre,
-                    qrCodeUrl: empleado.qr_code
-                });
+                req.session.userId = empleado.id;
+                req.session.nombreEmpleado = empleado.nombre;
+                req.session.empleadoApellido = empleado.apellido;
+                res.redirect('/panel-empleado');
             } else {
                 console.log('Contraseña incorrecta para empleado:', usuario);
                 res.redirect('/auth/login-empleado?error=incorrectPassword');
@@ -39,6 +41,17 @@ router.post('/login-empleado', async (req, res) => {
     }
 });
 
+router.get('/historial-asistencia-propio', isAuthenticated, async (req, res) => {
+    try {
+        const historialPropio = await db.getHistorialAsistenciaPorEmpleado(req.session.userId);
+        res.render('historial-asistencia', { historial: historialPropio, error: null });
+    } catch (error) {
+        console.error("Error al obtener el historial de asistencia del empleado:", error);
+        res.render('historial-asistencia', { historial: [], error: 'Error al cargar tu historial de asistencia.' });
+    }
+});
+
+
 router.get('/registro-empleado', (req, res) => {
     res.render('registro-empleado', { error: req.query.error });
 });
@@ -49,34 +62,15 @@ router.post('/registro-empleado', async (req, res) => {
     try {
         const empleadoId = await registrarEmpleado(usuario, password, nombre, apellido, parseInt(cedula), cargo, departamento, parseInt(telefono), correo);
         console.log('Empleado registrado correctamente con ID:', empleadoId);
+        await updateempleados(
+            empleadoId,
+            usuario,
+            nombre, apellido, parseInt(cedula), cargo, departamento, parseInt(telefono), correo,
+            String(empleadoId)
+        );
+        console.log(`Campo qr_code actualizado a '${empleadoId}' para el empleado ${empleadoId}`);
 
-        QRCode.toDataURL(`${empleadoId}`, async (err, url) => {
-            if (err) {
-                console.error('Error al generar el código QR:', err);
-            } else {
-                try {
-                    const empleado = await getEmpleadoPorId(empleadoId);
-                    if (empleado) {
-                        await new Promise((resolve, reject) => {
-                            db.run(`UPDATE empleados SET qr_code = ? WHERE id = ?`, [url, empleadoId], function(updateErr) {
-                                if (updateErr) {
-                                    console.error('Error al guardar la URL del código QR:', updateErr);
-                                    reject(updateErr);
-                                    return;
-                                }
-                                console.log('Código QR guardado para el empleado con ID:', empleadoId);
-                                resolve();
-                            });
-                        });
-                    } else {
-                        console.error('Empleado no encontrado para actualizar con QR.');
-                    }
-                } catch (updateErr) {
-                    console.error('Error al guardar la URL del código QR:', updateErr);
-                }
-            }
-            res.redirect('/auth/login-empleado');
-        });
+        res.redirect('/auth/login-empleado');
 
     } catch (error) {
         console.error('Error al registrar empleado:', error);
@@ -91,5 +85,17 @@ router.post('/registro-empleado', async (req, res) => {
         res.redirect(`/auth/registro-empleado?error=${errorParam}`);
     }
 });
+
+router.get('/logout', (req, res, next) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error al destruir la sesión:', err);
+            return next(err);
+        }
+        res.clearCookie('connect.sid');
+        res.redirect('/auth/login-empleado');
+    });
+});
+
 
 module.exports = router;

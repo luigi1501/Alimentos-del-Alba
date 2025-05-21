@@ -5,46 +5,106 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel del Empleado</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link rel="shortcut icon" href="../images/logo2.jpg" type="image/x-icon">
     <link rel="stylesheet" href="../stylesheets/panel-empleado.css">
     <link rel="shortcut icon" href="../images/logo2.jpg" type="image/x-icon">
 </head>
 <body>
-    <div class="logout-button">
-        <a href="/" class="btn btn-danger">Cerrar Sesión</a>
-    </div>
-    <div class="container">
-        <h2>Bienvenido al Panel del Empleado</h2>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand">Panel del Empleado - Alimentos del Alba</span>
+            <div class="logout-button">
+                <a href="/auth/logout" class="btn btn-danger">Cerrar Sesión</a>
+            </div>
+        </div>
+    </nav>
 
-        <% if (locals.userId) { %>
-            <div class="employee-info">
-                <% if (locals.nombreEmpleado) { %>
-                    <p><strong>¡Bienvenido, <%= locals.nombreEmpleado %>!</strong> Aquí podrás acceder a las herramientas y la información relevante para tu trabajo en Alimentos del Alba.</p>
+    <div class="container mt-4">
+        <% if (locals.message && locals.message.text) { %>
+            <div class="alert alert-<%= locals.message.type === 'success' ? 'success' : 'danger' %> alert-dismissible fade show" role="alert">
+                <%= locals.message.text %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <% } %>
+
+        <h2>Bienvenido</h2>
+
+        <% if (locals.empleado) { %>
+            <div class="profile-container">
+                <div class="profile-pic-wrapper">
+                    <%
+                        let profilePicSrc = '/images/default-profile-pic.png';
+                        if (empleado.foto_perfil) {
+                            profilePicSrc = empleado.foto_perfil;
+                        }
+                    %>
+                    <img src="<%= profilePicSrc %>" alt="Foto de Perfil">
+                </div>
+                <div class="employee-details">
+                    <h3><%= empleado.nombre %> <%= empleado.apellido %></h3>
+                    <p><strong>Cédula:</strong> <%= empleado.cedula %></p>
+                    <p><strong>Cargo:</strong> <%= empleado.cargo %></p>
+                    <p><strong>Departamento:</strong> <%= empleado.departamento %></p>
+                    </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3 class="card-title">Actualizar Foto de Perfil</h3>
+                </div>
+                <div class="card-body">
+                    <form action="/empleados/perfil/upload-foto" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="profilePic" class="form-label">Seleccionar nueva foto:</label>
+                            <input type="file" class="form-control" id="profilePic" name="profilePic" accept="image/jpeg, image/png, image/jpg" required>
+                            <div class="form-text">Solo se permiten imágenes JPEG, PNG o JPG (máx. 5MB).</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Subir/Actualizar Foto</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3 class="card-title">Descargar Carnet</h3>
+                </div>
+                <div class="card-body text-center">
+                    <p>Haz clic para descargar tu carnet de empleado en formato PDF.</p>
+                    <a href="/empleados/descargar-carnet" class="btn btn-info"><i class="bi bi-download me-2"></i>Descargar Carnet</a>
+                </div>
+            </div>
+
+            <div class="qr-code mt-4">
+                <h3>Tu Código QR de Asistencia</h3>
+                <% if (locals.qrCodeUrl) { %>
+                    <img src="<%= locals.qrCodeUrl %>" alt="Código QR de Asistencia" class="img-fluid" style="max-width: 200px;">
+                    <p class="text-muted mt-2">Utiliza este código para registrar tu asistencia al ingresar y salir.</p>
                 <% } else { %>
-                    <p class="alert alert-info">Bienvenido. La información de tu nombre no se pudo cargar.</p>
+                    <div class="alert alert-warning" role="alert">
+                        El código QR de asistencia no está disponible en este momento.
+                    </div>
                 <% } %>
             </div>
 
-            <% if (locals.qrCodeUrl) { %>
-                <div class="qr-code">
-                    <h3>Tu Código QR de Asistencia:</h3>
-                    <img src="<%= locals.qrCodeUrl %>" alt="Código QR de Asistencia" style="max-width: 200px;">
-                    <p class="mt-2">Utiliza este código QR para marcar tu asistencia.</p>
-                </div>
-            <% } else { %>
-                <div class="alert alert-warning">El código QR de asistencia no está disponible en este momento.</div>
-            <% } %>
-
         <% } else { %>
-            <p class="alert alert-warning">No se pudo identificar la información del usuario.</p>
+            <div class="alert alert-danger" role="alert">
+                No se pudo identificar tu sesión de usuario o cargar los datos del empleado. Por favor, vuelve a iniciar sesión.
+            </div>
         <% } %>
 
-        <h3>Próximamente:</h3>
-        <ul>
-            <li>Visualización de horario</li>
-            <li>Acceso a documentos importantes</li>
-        </ul>
+        <div class="future-features mt-5">
+            <h3>Próximas Funcionalidades</h3>
+            <ul>
+                <li><i class="bi bi-calendar-event me-2"></i> Visualización de tu horario de trabajo detallado.</li>
+                <li><i class="bi bi-folder me-2"></i> Acceso rápido a documentos importantes de la empresa y personales.</li>
+                <li><i class="bi bi-bell me-2"></i> Sistema de notificaciones para comunicados y recordatorios.</li>
+                <li><i class="bi bi-person-lines-fill me-2"></i> Posibilidad de actualizar tu información de contacto.</li>
+                <li><i class="bi bi-question-circle me-2"></i> Sección de preguntas frecuentes y soporte.</li>
+            </ul>
+            <p class="text-muted mt-3">¡Estamos trabajando para mejorar tu experiencia!</p>
+        </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.min.css">
 </body>
 </html>
