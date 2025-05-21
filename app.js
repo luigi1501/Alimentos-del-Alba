@@ -8,6 +8,7 @@ const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode');
 const Jimp = require('jimp');
 const fs = require('fs');
+const isAuthenticated = require('./middleware/authMiddleware');
 
 dotenv.config();
 
