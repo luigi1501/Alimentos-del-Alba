@@ -20,7 +20,7 @@ const db = new sqlite3.Database(DB_PATH, sqlite3.OPEN_READWRITE | sqlite3.OPEN_C
                 telefono INTEGER,
                 correo TEXT UNIQUE,
                 qr_code TEXT UNIQUE,
-                foto_perfil TEX
+                foto_perfil TEXT
             )
         `, (createTableErr) => {
             if (createTableErr) {
