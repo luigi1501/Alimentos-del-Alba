@@ -66,7 +66,7 @@ const upload = multer({
 
 const authRouter = require('./routes/auth');
 const indexRouter = require('./routes/index');
-const employeeController = require('./controllers/employeeController');
+const employeeController = require('./controllers/employeeActions');
 
 app.use('/auth', authRouter);
 app.use('/', indexRouter);
