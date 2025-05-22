@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const dotenv = require('dotenv');
 const multer = require('multer');
+const SQLiteStore = require('connect-sqlite3')(session);
 
 dotenv.config();
 
@@ -13,10 +14,19 @@ const port = process.env.PORT || 3000;
 const db = require('./db/models');
 
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'supersecretkey',
+    store: new SQLiteStore({
+        db: 'sessions.db',
+        table: 'sessions',
+        dir: './db'
+    }),
+    secret: process.env.SESSION_SECRET || 'una_cadena_secreta_de_respaldo',
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: process.env.NODE_ENV === 'production' }
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production'
+    }
 }));
 
 app.use((req, res, next) => {
@@ -32,7 +42,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -56,7 +65,6 @@ app.use((err, req, res, next) => {
         } else {
             req.session.message = { type: 'danger', text: 'Error al subir el archivo: ' + err.message };
         }
-
         return res.redirect('/auth/panel-empleado');
     }
     res.status(500).send('¡Algo salió mal en el servidor!');
