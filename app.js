@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-const db = require('./db/models'); 
+const db = require('./db/models');
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'supersecretkey',
