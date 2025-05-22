@@ -13,16 +13,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-const db = require('./db/models');
-async function initializeDatabase() {
-    try {
-        console.log('Base de datos inicializada correctamente (o al menos módulos cargados).');
-    } catch (error) {
-        console.error('Error FATAL al inicializar la base de datos:', error);
-        process.exit(1);
-    }
-}
-initializeDatabase();
+const db = require('./db/models'); 
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'supersecretkey',
@@ -62,7 +53,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 },
+    limits: { fileSize: 100 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
         if (allowedMimes.includes(file.mimetype)) {
@@ -81,7 +72,6 @@ app.use('/auth', authRouter);
 app.use('/', indexRouter);
 
 app.post('/empleados/perfil/upload-foto', isAuthenticated, upload.single('profilePic'), employeeController.uploadProfilePhoto);
-
 app.get('/empleados/descargar-carnet', isAuthenticated, employeeController.downloadCarnet);
 
 app.get('/panel-empleado', isAuthenticated, async (req, res) => {
