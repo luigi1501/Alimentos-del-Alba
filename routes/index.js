@@ -2,9 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/models');
 require('dotenv').config();
-const isAuthenticated = require('../middleware/authMiddleware');
+const { isAuthenticated, isAdmin } = require('../middleware/authMiddleware');
 const attendanceController = require('../controllers/attendanceController');
-
 
 router.get('/', (req, res) => {
     res.render('index');
@@ -15,29 +14,50 @@ router.get('/login', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
+    console.log("--- Intento de Login Admin ---");
+    console.log("Valores recibidos del formulario:");
+    console.log("  req.body.user:", req.body.user);
+    console.log("  req.body.password:", req.body.password);
+    console.log("Valores de las variables de entorno (Render):");
+    console.log("  process.env.USER:", process.env.USER);
+    console.log("  process.env.PASS:", process.env.PASS); 
+
     if (req.body.user === process.env.USER && req.body.password === process.env.PASS) {
-        console.log("Admin iniciado sesión");
+        console.log("Admin iniciado sesión - Credenciales MATCH!");
         req.session.loggedIn = true;
         req.session.isAdmin = true;
+        console.log("Sesión establecida para Admin. req.session.loggedIn:", req.session.loggedIn, "req.session.isAdmin:", req.session.isAdmin);
         res.redirect('/admin');
     } else {
+        console.log("Login admin fallido - Credenciales NO MATCH.");
         res.redirect('/login?error=incorrectCredentials');
     }
 });
 
 router.get('/admin', (req, res) => {
+    console.log("Accediendo a /admin. Estado de la sesión:");
+    console.log("  req.session:", req.session);
+    console.log("  req.session.loggedIn:", req.session.loggedIn);
+    console.log("  req.session.isAdmin:", req.session.isAdmin);
+
     if (req.session && req.session.loggedIn && req.session.isAdmin) {
         res.render('admin');
     } else {
+        console.log("Acceso a /admin denegado. Sesión no válida.");
         res.redirect('/login');
     }
 });
 
 router.get('/tabGeneral', (req, res) => {
+    console.log("Accediendo a /tabGeneral. Estado de la sesión:");
+    console.log("  req.session:", req.session);
+    console.log("  req.session.loggedIn:", req.session.loggedIn);
+    console.log("  req.session.isAdmin:", req.session.isAdmin);
+
     if (req.session && req.session.loggedIn && req.session.isAdmin) {
         db.getempleados()
             .then(empleados => {
-                console.log("Empleados cargados para /tabGeneral:", empleados);
+                console.log("Empleados cargados para /tabGeneral:", empleados.length, "registros.");
                 res.render('tabGeneral', { empleados: empleados });
             })
             .catch(err => {
@@ -45,12 +65,19 @@ router.get('/tabGeneral', (req, res) => {
                 res.render('tabGeneral', { empleados: [] });
             });
     } else {
+        console.log("Acceso a /tabGeneral denegado. Sesión no válida.");
         res.redirect('/login');
     }
 });
 
 router.post('/guardarEmpleado', (req, res) => {
+    console.log("Accediendo a /guardarEmpleado. Estado de la sesión:");
+    console.log("  req.session:", req.session);
+    console.log("  req.session.loggedIn:", req.session.loggedIn);
+    console.log("  req.session.isAdmin:", req.session.isAdmin);
+
     if (!req.session || !req.session.loggedIn || !req.session.isAdmin) {
+        console.log("Acceso a /guardarEmpleado denegado. Sesión no válida.");
         return res.redirect('/login');
     }
     const { usuario, nombre, apellido, cedula, cargo, departamento, telefono, correo } = req.body;
@@ -66,6 +93,11 @@ router.post('/guardarEmpleado', (req, res) => {
 });
 
 router.get('/editempleado/:id', (req, res) => {
+    console.log("Accediendo a /editempleado/:id. Estado de la sesión:");
+    console.log("  req.session:", req.session);
+    console.log("  req.session.loggedIn:", req.session.loggedIn);
+    console.log("  req.session.isAdmin:", req.session.isAdmin);
+
     if (req.session && req.session.loggedIn && req.session.isAdmin) {
         const id = req.params.id;
         db.getempleadosID(id)
@@ -77,11 +109,17 @@ router.get('/editempleado/:id', (req, res) => {
                 res.redirect('/tabGeneral?error=editFailed');
             });
     } else {
+        console.log("Acceso a /editempleado/:id denegado. Sesión no válida.");
         res.redirect('/login');
     }
 });
 
 router.post('/updateempleado/:id', async (req, res) => {
+    console.log("Accediendo a /updateempleado/:id. Estado de la sesión:");
+    console.log("  req.session:", req.session);
+    console.log("  req.session.loggedIn:", req.session.loggedIn);
+    console.log("  req.session.isAdmin:", req.session.isAdmin);
+
     if (req.session && req.session.loggedIn && req.session.isAdmin) {
         const id = req.params.id;
         try {
@@ -91,10 +129,10 @@ router.post('/updateempleado/:id', async (req, res) => {
                 empleadoActualizado.usuario,
                 empleadoActualizado.nombre,
                 empleadoActualizado.apellido,
-                empleadoActualizado.cedula,
+                parseInt(empleadoActualizado.cedula),
                 empleadoActualizado.cargo,
                 empleadoActualizado.departamento,
-                empleadoActualizado.telefono,
+                parseInt(empleadoActualizado.telefono),
                 empleadoActualizado.correo,
                 empleadoActualizado.qr_code
             );
@@ -105,11 +143,17 @@ router.post('/updateempleado/:id', async (req, res) => {
             res.redirect('/tabGeneral?error=updateFailed');
         }
     } else {
+        console.log("Acceso a /updateempleado/:id denegado. Sesión no válida.");
         res.redirect('/login');
     }
 });
 
 router.get('/deleteempleado/:id', (req, res) => {
+    console.log("Accediendo a /deleteempleado/:id. Estado de la sesión:");
+    console.log("  req.session:", req.session);
+    console.log("  req.session.loggedIn:", req.session.loggedIn);
+    console.log("  req.session.isAdmin:", req.session.isAdmin);
+
     if (req.session && req.session.loggedIn && req.session.isAdmin) {
         const idToDelete = req.params.id;
         console.log("Solicitud para eliminar empleado con ID:", idToDelete);
@@ -130,6 +174,7 @@ router.get('/deleteempleado/:id', (req, res) => {
                 res.status(500).json({ success: false, error: err.message });
             });
     } else {
+        console.log("Acceso a /deleteempleado/:id denegado. Sesión no válida.");
         res.redirect('/login');
     }
 });
@@ -139,7 +184,6 @@ router.get('/escanear-asistencia', function(req, res, next) {
 });
 
 router.post('/registrar-asistencia', attendanceController.registrarAsistenciaQR);
-
 router.get('/historial-asistencia', attendanceController.mostrarHistorialAsistencia);
 
 

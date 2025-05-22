@@ -9,9 +9,37 @@ const fs = require('fs');
 const multer = require('multer');
 const QRCode = require('qrcode');
 const employeeActions = require('../controllers/employeeActions');
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
+        fs.mkdirSync(uploadDir, { recursive: true });
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 100 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
+        if (allowedMimes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Solo se permiten imágenes JPEG, PNG o JPG.'), false);
+        }
+    }
+});
 
 router.get('/login-empleado', (req, res) => {
+    console.log("Accediendo a /auth/login-empleado (GET). Estado de la sesión:");
+    console.log("  req.session:", req.session);
+    console.log("  req.session.userId:", req.session.userId);
+
     if (req.session && req.session.userId) {
+        console.log("Sesión de empleado detectada en /auth/login-empleado (GET). Redirigiendo a panel.");
         return res.redirect('/auth/panel-empleado');
     }
     res.render('login-empleado', { error: req.query.error });
@@ -20,10 +48,15 @@ router.get('/login-empleado', (req, res) => {
 router.post('/login-empleado', async (req, res) => {
     const { usuario, password } = req.body;
 
+    console.log("--- Intento de Login Empleado (POST /auth/login-empleado) ---");
+    console.log("Valores recibidos del formulario:");
+    console.log("  usuario ingresado:", usuario);
+    console.log("  password ingresado:", password ? '********' : 'Vacío'); // No loguear password real
+
     try {
         const empleado = await obtenerEmpleadoPorUsuario(usuario);
         if (empleado) {
-            console.log('Empleado encontrado para', usuario + ':', empleado);
+            console.log('Empleado encontrado para', usuario + ' (ID:', empleado.id + ')');
             const passwordValido = await verificarPassword(password, empleado.password_hash);
             console.log('¿Contraseña válida?', passwordValido);
 
@@ -32,6 +65,7 @@ router.post('/login-empleado', async (req, res) => {
                 req.session.userId = empleado.id;
                 req.session.nombreEmpleado = empleado.nombre;
                 req.session.empleadoApellido = empleado.apellido;
+                console.log("Sesión establecida para Empleado (POST). req.session.userId:", req.session.userId);
                 res.redirect('/auth/panel-empleado');
             } else {
                 console.log('Contraseña incorrecta para empleado:', usuario);
@@ -42,12 +76,16 @@ router.post('/login-empleado', async (req, res) => {
             res.redirect('/auth/login-empleado?error=employeeNotFound');
         }
     } catch (error) {
-        console.error('Error al iniciar sesión:', error);
+        console.error('Error al iniciar sesión de empleado:', error);
         res.redirect('/auth/login-empleado?error=loginFailed');
     }
 });
 
-router.get('/historial-asistencia-propio', isAuthenticated, async (req, res) => {
+router.get('/historial-asistencia', isAuthenticated, async (req, res) => {
+    console.log("Accediendo a /auth/historial-asistencia. Estado de la sesión (después de isAuthenticated):");
+    console.log("  req.session:", req.session);
+    console.log("  req.session.userId:", req.session.userId);
+
     try {
         const historialPropio = await db.getHistorialAsistenciaPorEmpleado(req.session.userId);
         res.render('historial-asistencia', { historial: historialPropio, error: null });
@@ -64,9 +102,13 @@ router.get('/registro-empleado', (req, res) => {
 router.post('/registro-empleado', async (req, res) => {
     const { usuario, password, nombre, apellido, cedula, cargo, departamento, telefono, correo } = req.body;
 
+    console.log("--- Intento de Registro de Empleado (POST /auth/registro-empleado) ---");
+    console.log("Datos recibidos:", { usuario, nombre, cedula });
+
     try {
         const empleadoId = await registrarEmpleado(usuario, password, nombre, apellido, parseInt(cedula), cargo, departamento, parseInt(telefono), correo);
         console.log('Empleado registrado correctamente con ID:', empleadoId);
+
         await updateempleados(
             empleadoId,
             usuario,
@@ -92,45 +134,29 @@ router.post('/registro-empleado', async (req, res) => {
 });
 
 router.get('/logout', (req, res, next) => {
+    console.log("--- Procesando Logout ---");
+    console.log("Sesión antes de destruir:", req.session);
+
     req.session.destroy(err => {
         if (err) {
             console.error('Error al destruir la sesión:', err);
             return next(err);
         }
+        console.log("Sesión destruida. Eliminando cookie.");
         res.clearCookie('connect.sid');
+        console.log("Redirigiendo a /auth/login-empleado después de logout.");
         res.redirect('/auth/login-empleado');
     });
 });
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
-        fs.mkdirSync(uploadDir, { recursive: true });
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname);
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 100 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-        const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
-        if (allowedMimes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Solo se permiten imágenes JPEG, PNG o JPG.'), false);
-        }
-    }
-});
-
 router.post('/empleados/perfil/upload-foto', isAuthenticated, upload.single('profilePic'), employeeActions.uploadProfilePhoto);
-
 router.get('/empleados/descargar-carnet', isAuthenticated, employeeActions.downloadCarnet);
 
 router.get('/panel-empleado', isAuthenticated, async (req, res) => {
+    console.log("Accediendo a /auth/panel-empleado. Estado de la sesión (después de isAuthenticated):");
+    console.log("  req.session:", req.session);
+    console.log("  req.session.userId:", req.session.userId);
+
     try {
         const empleado = await getEmpleadoPorId(req.session.userId);
         let qrCodeUrl = null;
@@ -141,7 +167,8 @@ router.get('/panel-empleado', isAuthenticated, async (req, res) => {
 
         res.render('panel-empleado', {
             empleado: empleado,
-            qrCodeUrl: qrCodeUrl
+            qrCodeUrl: qrCodeUrl,
+            message: req.session.message
         });
     } catch (error) {
         console.error('Error al cargar el panel del empleado:', error);
