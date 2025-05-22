@@ -1,8 +1,14 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcrypt');
 const { registrarEmpleado, obtenerEmpleadoPorUsuario, verificarPassword, getEmpleadoPorId, updateempleados } = require('../db/models');
 const db = require('../db/connection');
 const { isAuthenticated, isAdmin } = require('../middleware/authMiddleware');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+const QRCode = require('qrcode');
+const employeeActions = require('../controllers/employeeActions');
 
 router.get('/login-empleado', (req, res) => {
     if (req.session && req.session.userId) {
@@ -51,7 +57,6 @@ router.get('/historial-asistencia-propio', isAuthenticated, async (req, res) => 
     }
 });
 
-
 router.get('/registro-empleado', (req, res) => {
     res.render('registro-empleado', { error: req.query.error });
 });
@@ -97,5 +102,52 @@ router.get('/logout', (req, res, next) => {
     });
 });
 
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
+        fs.mkdirSync(uploadDir, { recursive: true });
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 100 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
+        if (allowedMimes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Solo se permiten imágenes JPEG, PNG o JPG.'), false);
+        }
+    }
+});
+
+router.post('/empleados/perfil/upload-foto', isAuthenticated, upload.single('profilePic'), employeeActions.uploadProfilePhoto);
+
+router.get('/empleados/descargar-carnet', isAuthenticated, employeeActions.downloadCarnet);
+
+router.get('/panel-empleado', isAuthenticated, async (req, res) => {
+    try {
+        const empleado = await getEmpleadoPorId(req.session.userId);
+        let qrCodeUrl = null;
+
+        if (empleado && empleado.qr_code) {
+            qrCodeUrl = await QRCode.toDataURL(empleado.qr_code);
+        }
+
+        res.render('panel-empleado', {
+            empleado: empleado,
+            qrCodeUrl: qrCodeUrl
+        });
+    } catch (error) {
+        console.error('Error al cargar el panel del empleado:', error);
+        req.session.message = { type: 'danger', text: 'No se pudo cargar la información de tu panel. Por favor, intenta de nuevo.' };
+        res.redirect('/auth/login-empleado');
+    }
+});
 
 module.exports = router;
