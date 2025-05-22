@@ -8,6 +8,8 @@ const isAuthenticated = require('./middleware/authMiddleware');
 const multer = require('multer');
 const QRCode = require('qrcode');
 
+console.log('Valor de employeeController:', employeeController); //Probando
+
 dotenv.config();
 
 const app = express();
