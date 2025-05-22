@@ -3,6 +3,7 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
 const dotenv = require('dotenv');
+const multer = require('multer');
 
 dotenv.config();
 
@@ -48,12 +49,14 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
+
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
             req.session.message = { type: 'danger', text: 'El archivo es demasiado grande (máximo 5MB).' };
         } else {
             req.session.message = { type: 'danger', text: 'Error al subir el archivo: ' + err.message };
         }
+
         return res.redirect('/auth/panel-empleado');
     }
     res.status(500).send('¡Algo salió mal en el servidor!');

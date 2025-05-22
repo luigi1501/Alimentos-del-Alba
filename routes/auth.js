@@ -12,7 +12,7 @@ const employeeActions = require('../controllers/employeeActions');
 
 router.get('/login-empleado', (req, res) => {
     if (req.session && req.session.userId) {
-        return res.redirect('/panel-empleado');
+        return res.redirect('/auth/panel-empleado');
     }
     res.render('login-empleado', { error: req.query.error });
 });
@@ -32,7 +32,7 @@ router.post('/login-empleado', async (req, res) => {
                 req.session.userId = empleado.id;
                 req.session.nombreEmpleado = empleado.nombre;
                 req.session.empleadoApellido = empleado.apellido;
-                res.redirect('/panel-empleado');
+                res.redirect('/auth/panel-empleado');
             } else {
                 console.log('Contraseña incorrecta para empleado:', usuario);
                 res.redirect('/auth/login-empleado?error=incorrectPassword');

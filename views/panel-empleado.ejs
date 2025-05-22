@@ -52,7 +52,8 @@
                     <h3 class="card-title">Actualizar Foto de Perfil</h3>
                 </div>
                 <div class="card-body">
-                    <form action="/empleados/perfil/upload-foto" method="POST" enctype="multipart/form-data">
+                    <%-- CAMBIO AQUÍ: Form action --%>
+                    <form action="/auth/empleados/perfil/upload-foto" method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="profilePic" class="form-label">Seleccionar nueva foto:</label>
                             <input type="file" class="form-control" id="profilePic" name="profilePic" accept="image/jpeg, image/png, image/jpg" required>
@@ -69,7 +70,8 @@
                 </div>
                 <div class="card-body text-center">
                     <p>Haz clic para descargar tu carnet de empleado en formato PDF.</p>
-                    <a href="/empleados/descargar-carnet" class="btn btn-info"><i class="bi bi-download me-2"></i>Descargar Carnet</a>
+                    <%-- CAMBIO AQUÍ: Enlace de descarga --%>
+                    <a href="/auth/empleados/descargar-carnet" class="btn btn-info"><i class="bi bi-download me-2"></i>Descargar Carnet</a>
                 </div>
             </div>
 
