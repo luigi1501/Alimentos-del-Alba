@@ -1,38 +1,3 @@
-const db = require('../db/models');
-const path = require('path');
-const fs = require('fs');
-const QRCode = require('qrcode');
-const PDFDocument = require('pdfkit');
-
-const getPublicPath = (relativePath) => {
-    return path.join(__dirname, '..', 'public', relativePath);
-};
-
-const uploadProfilePhoto = async (req, res) => {
-    try {
-        if (!req.file) {
-            req.session.message = { type: 'danger', text: 'No se seleccionó ninguna imagen.' };
-            return res.redirect('/auth/panel-empleado');
-        }
-
-        const userId = req.session.userId;
-        const newPhotoPath = '/uploads/' + req.file.filename;
-
-        await db.updateEmpleadoFotoPerfil(userId, newPhotoPath);
-
-        req.session.message = { type: 'success', text: 'Foto de perfil actualizada exitosamente.' };
-        res.redirect('/auth/panel-empleado');
-
-    } catch (error) {
-        console.error('Error al subir la foto de perfil:', error);
-        if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
-        req.session.message = { type: 'danger', text: 'Hubo un error al actualizar la foto de perfil.' };
-        res.redirect('/auth/panel-empleado');
-    }
-};
-
 const downloadCarnet = async (req, res) => {
     try {
         const empleado = await db.getEmpleadoPorId(req.session.userId);
@@ -56,22 +21,22 @@ const downloadCarnet = async (req, res) => {
 
         doc.pipe(res);
 
-        doc.rect(0, 0, 153, 243).fill('#F0F8FF');
-        doc.lineWidth(1);
+        doc.rect(0, 0, 153, 243).fill('#FFFFFF');
+        doc.lineWidth(0.5);
         doc.strokeColor('#A9A9A9');
-        doc.rect(5, 5, 143, 233).stroke();
+        doc.rect(2, 2, 149, 239).stroke();
 
         doc.fillColor('#000000')
            .fontSize(7)
            .font('Helvetica-Bold')
-           .text('REPÚBLICA BOLIVARIANA DE VENEZUELA', 0, 15, { align: 'center', width: 153 });
+           .text('REPÚBLICA BOLIVARIANA DE VENEZUELA', 0, 10, { align: 'center', width: 153 });
+
+        const logoWidth = 50;
+        const logoX = (153 - logoWidth) / 2;
+        const logoY = 25;
 
         if (fs.existsSync(companyLogoPath)) {
-            const logoWidth = 50;
-            doc.image(companyLogoPath, (153 - logoWidth) / 2, 30, { width: logoWidth });
-        } else {
-            console.warn('Advertencia: El logo de la empresa no se encontró en la ruta:', companyLogoPath);
-            doc.fontSize(8).fillColor('gray').text('Logo', (153 - 40) / 2, 35, { width: 40, align: 'center' });
+            doc.image(companyLogoPath, logoX, logoY, { width: logoWidth });
         }
 
         doc.fillColor('#c0392b')
@@ -79,25 +44,23 @@ const downloadCarnet = async (req, res) => {
            .font('Helvetica-Bold')
            .text('ALIMENTOS DEL ALBA', 0, 70, { align: 'center', width: 153 });
 
-        const photoQrAreaY = 95;
-
+        const photoQrSectionY = 95;
         const photoWidth = 60;
         const photoHeight = 60;
         const photoX = (153 - photoWidth) / 2;
-        const photoY = photoQrAreaY;
+        const photoY = photoQrSectionY;
 
         if (empleado.foto_perfil) {
             const fotoPerfilFullPath = getPublicPath(empleado.foto_perfil);
             if (fs.existsSync(fotoPerfilFullPath)) {
-                doc.image(fotoPerfilFullPath, photoX, photoY, { width: photoWidth, height: photoHeight, fit: [photoWidth, photoHeight], align: 'center', valign: 'center' });
-            } else {
-                console.warn('Advertencia: La foto de perfil del empleado no se encontró en la ruta:', fotoPerfilFullPath);
-                doc.rect(photoX, photoY, photoWidth, photoHeight).fill('#cccccc');
-                doc.fillColor('black').fontSize(8).text('Sin Foto', photoX, photoY + (photoHeight / 2) - 4, { width: photoWidth, align: 'center' });
+                doc.image(fotoPerfilFullPath, photoX, photoY, {
+                    width: photoWidth,
+                    height: photoHeight,
+                    fit: [photoWidth, photoHeight],
+                    align: 'center',
+                    valign: 'center'
+                });
             }
-        } else {
-            doc.rect(photoX, photoY, photoWidth, photoHeight).fill('#cccccc');
-            doc.fillColor('black').fontSize(8).text('Sin Foto', photoX, photoY + (photoHeight / 2) - 4, { width: photoWidth, align: 'center' });
         }
 
         const qrWidth = 70;
@@ -107,7 +70,6 @@ const downloadCarnet = async (req, res) => {
         doc.image(qrCodeImageBase64, qrX, qrY, { width: qrWidth });
 
         let currentY = qrY + qrWidth + 10;
-
         doc.fillColor('#000000')
            .fontSize(11)
            .font('Helvetica-Bold')
@@ -122,18 +84,7 @@ const downloadCarnet = async (req, res) => {
         doc.fontSize(9)
            .text(`${empleado.cargo.toUpperCase()}`, 0, currentY, { align: 'center', width: 153 });
 
-
-        if (empleado.departamento) {
-            currentY += 12;
-            doc.fontSize(8)
-            .text(`${empleado.departamento.toUpperCase()}`, 0, currentY, { align: 'center', width: 153 });
-        }
-
-        const footerHeight = 35; 
-        const footerY = 243 - footerHeight;
-
-        doc.rect(0, footerY, 153, footerHeight).fill('#ADD8E6');
-
+        const footerY = 243 - 35;
         doc.fillColor('#000000')
            .fontSize(7)
            .text('Alimentos del Alba C.A.', 0, footerY + 8, { align: 'center', width: 153 })
@@ -146,13 +97,6 @@ const downloadCarnet = async (req, res) => {
         req.session.message = { type: 'danger', text: 'Hubo un error al generar o descargar el carnet PDF.' };
         if (!res.headersSent) {
             res.redirect('/auth/panel-empleado');
-        } else {
-            console.error('Error: Las cabeceras ya fueron enviadas, no se puede redirigir después de un error en la generación del PDF.');
         }
     }
-};
-
-module.exports = {
-    uploadProfilePhoto,
-    downloadCarnet
 };
