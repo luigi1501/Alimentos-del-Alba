@@ -35,7 +35,6 @@ const upload = multer({
 });
 
 router.get('/login-empleado', (req, res) => {
-
     if (req.session && req.session.userId) {
         console.log("Sesión de empleado detectada en /auth/login-empleado (GET). Redirigiendo a panel.");
         return res.redirect('/auth/panel-empleado');
@@ -76,7 +75,6 @@ router.post('/login-empleado', async (req, res) => {
 });
 
 router.get('/historial-asistencia', isAuthenticated, async (req, res) => {
-
     try {
         const historialPropio = await db.getHistorialAsistenciaPorEmpleado(req.session.userId);
         res.render('historial-asistencia', { historial: historialPropio, error: null });
@@ -139,10 +137,10 @@ router.get('/logout', (req, res, next) => {
 
 router.post('/empleados/perfil/upload-foto', isAuthenticated, upload.single('profilePic'), employeeActions.uploadProfilePhoto);
 
-router.get('/empleados/descargar-carnet-pdf', isAuthenticated, employeeActions.downloadCarnet);
+router.get('/descargar-qr-imagen', isAuthenticated, employeeActions.downloadQrImage);
+
 
 router.get('/panel-empleado', isAuthenticated, async (req, res) => {
-
     try {
         const empleado = await getEmpleadoPorId(req.session.userId);
         let qrCodeUrl = null;
