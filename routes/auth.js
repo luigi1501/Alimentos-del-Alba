@@ -9,6 +9,7 @@ const fs = require('fs');
 const multer = require('multer');
 const QRCode = require('qrcode');
 const employeeActions = require('../controllers/employeeActions');
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
@@ -35,8 +36,8 @@ const upload = multer({
 
 router.get('/login-empleado', (req, res) => {
     console.log("Accediendo a /auth/login-empleado (GET). Estado de la sesión:");
-    console.log("  req.session:", req.session);
-    console.log("  req.session.userId:", req.session.userId);
+    console.log("    req.session:", req.session);
+    console.log("    req.session.userId:", req.session.userId);
 
     if (req.session && req.session.userId) {
         console.log("Sesión de empleado detectada en /auth/login-empleado (GET). Redirigiendo a panel.");
@@ -50,8 +51,8 @@ router.post('/login-empleado', async (req, res) => {
 
     console.log("--- Intento de Login Empleado (POST /auth/login-empleado) ---");
     console.log("Valores recibidos del formulario:");
-    console.log("  usuario ingresado:", usuario);
-    console.log("  password ingresado:", password ? '********' : 'Vacío'); // No loguear password real
+    console.log("    usuario ingresado:", usuario);
+    console.log("    password ingresado:", password ? '********' : 'Vacío');
 
     try {
         const empleado = await obtenerEmpleadoPorUsuario(usuario);
@@ -83,8 +84,8 @@ router.post('/login-empleado', async (req, res) => {
 
 router.get('/historial-asistencia', isAuthenticated, async (req, res) => {
     console.log("Accediendo a /auth/historial-asistencia. Estado de la sesión (después de isAuthenticated):");
-    console.log("  req.session:", req.session);
-    console.log("  req.session.userId:", req.session.userId);
+    console.log("    req.session:", req.session);
+    console.log("    req.session.userId:", req.session.userId);
 
     try {
         const historialPropio = await db.getHistorialAsistenciaPorEmpleado(req.session.userId);
@@ -154,8 +155,8 @@ router.get('/empleados/descargar-carnet', isAuthenticated, employeeActions.downl
 
 router.get('/panel-empleado', isAuthenticated, async (req, res) => {
     console.log("Accediendo a /auth/panel-empleado. Estado de la sesión (después de isAuthenticated):");
-    console.log("  req.session:", req.session);
-    console.log("  req.session.userId:", req.session.userId);
+    console.log("    req.session:", req.session);
+    console.log("    req.session.userId:", req.session.userId);
 
     try {
         const empleado = await getEmpleadoPorId(req.session.userId);
@@ -164,6 +165,10 @@ router.get('/panel-empleado', isAuthenticated, async (req, res) => {
         if (empleado && empleado.qr_code) {
             qrCodeUrl = await QRCode.toDataURL(empleado.qr_code);
         }
+
+        console.log('DEBUG: Data being passed to panel-empleado.ejs:', JSON.stringify(empleado, null, 2));
+        console.log('DEBUG: qrCodeUrl:', qrCodeUrl);
+        console.log('DEBUG: session.message:', req.session.message);
 
         res.render('panel-empleado', {
             empleado: empleado,

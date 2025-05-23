@@ -21,7 +21,7 @@
     <div class="container mt-4">
         <% if (locals.message && locals.message.text) { %>
             <div class="alert alert-<%= locals.message.type === 'success' ? 'success' : 'danger' %> alert-dismissible fade show" role="alert">
-                <%= locals.message.text %>
+                <%- locals.message.text %>  <--- CAMBIADO
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <% } %>
@@ -37,14 +37,14 @@
                             profilePicSrc = empleado.foto_perfil;
                         }
                     %>
-                    <img src="<%= profilePicSrc %>" alt="Foto de Perfil">
+                    <img src="<%- profilePicSrc %>" alt="Foto de Perfil">  <--- CAMBIADO
                 </div>
                 <div class="employee-details">
-                    <h3><%= empleado.nombre %> <%= empleado.apellido %></h3>
-                    <p><strong>Cédula:</strong> <%= empleado.cedula %></p>
-                    <p><strong>Cargo:</strong> <%= empleado.cargo %></p>
-                    <p><strong>Departamento:</strong> <%= empleado.departamento %></p>
-                    </div>
+                    <h3><%- empleado.nombre %> <%- empleado.apellido || '' %></h3>  <--- CAMBIADO
+                    <p><strong>Cédula:</strong> <%- empleado.cedula %></p>  <--- CAMBIADO
+                    <p><strong>Cargo:</strong> <%- empleado.cargo %></p>  <--- CAMBIADO
+                    <p><strong>Departamento:</strong> <%- empleado.departamento %></p>  <--- CAMBIADO
+                </div>
             </div>
 
             <div class="card mt-4">
@@ -52,7 +52,6 @@
                     <h3 class="card-title">Actualizar Foto de Perfil</h3>
                 </div>
                 <div class="card-body">
-                    <%-- CAMBIO AQUÍ: Form action --%>
                     <form action="/auth/empleados/perfil/upload-foto" method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="profilePic" class="form-label">Seleccionar nueva foto:</label>
@@ -70,7 +69,6 @@
                 </div>
                 <div class="card-body text-center">
                     <p>Haz clic para descargar tu carnet de empleado en formato PDF.</p>
-                    <%-- CAMBIO AQUÍ: Enlace de descarga --%>
                     <a href="/auth/empleados/descargar-carnet" class="btn btn-info"><i class="bi bi-download me-2"></i>Descargar Carnet</a>
                 </div>
             </div>
@@ -78,7 +76,7 @@
             <div class="qr-code mt-4">
                 <h3>Tu Código QR de Asistencia</h3>
                 <% if (locals.qrCodeUrl) { %>
-                    <img src="<%= locals.qrCodeUrl %>" alt="Código QR de Asistencia" class="img-fluid" style="max-width: 200px;">
+                    <img src="<%- locals.qrCodeUrl %>" alt="Código QR de Asistencia" class="img-fluid" style="max-width: 200px;">  <--- CAMBIADO
                     <p class="text-muted mt-2">Utiliza este código para registrar tu asistencia al ingresar y salir.</p>
                 <% } else { %>
                     <div class="alert alert-warning" role="alert">

@@ -101,13 +101,20 @@ module.exports = {
     },
 
     async getEmpleadoPorId(id) {
+        console.log(`DEBUG DB: [getEmpleadoPorId] Intentando obtener empleado con ID: ${id}`);
         return new Promise((resolve, reject) => {
             db.get(querys.getEmpleadoPorId, [id], (err, row) => {
                 if (err) {
-                    console.error('Error al obtener empleado por ID:', err.message);
+                    console.error('DEBUG DB: [getEmpleadoPorId] Error al obtener empleado por ID:', err.message);
                     return reject(err);
                 }
-                resolve(row);
+                if (row) {
+                    console.log('DEBUG DB: [getEmpleadoPorId] Empleado ENCONTRADO:', row);
+                    resolve(row);
+                } else {
+                    console.log(`DEBUG DB: [getEmpleadoPorId] No se encontró empleado con ID: ${id}`);
+                    resolve(null);
+                }
             });
         });
     },
