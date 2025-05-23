@@ -1,6 +1,7 @@
 const db = require('./connection');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const { format, utcToZonedTime } = require('date-fns-tz');
 
 let querys = {
     getempleados: 'SELECT id, usuario, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code, foto_perfil FROM empleados',
@@ -20,6 +21,8 @@ let querys = {
     getHistorialAsistenciaPorFecha: 'SELECT ha.id_asistencia, e.nombre, e.apellido, e.cargo, e.departamento, e.cedula, ha.fecha, ha.hora_entrada, ha.hora_salida FROM historial_asistencia ha JOIN empleados e ON ha.empleado_id = e.id WHERE ha.fecha = ? ORDER BY ha.fecha DESC, ha.hora_entrada DESC',
     getHistorialAsistenciaPorEmpleadoYFecha: 'SELECT ha.id_asistencia, ha.fecha, ha.hora_entrada, ha.hora_salida FROM historial_asistencia ha WHERE ha.empleado_id = ? AND ha.fecha = ? ORDER BY ha.fecha DESC, ha.hora_entrada DESC'
 };
+
+const VENEZUELA_TIMEZONE = 'America/Caracas';
 
 module.exports = {
 
@@ -187,8 +190,9 @@ module.exports = {
     async registrarEntrada(empleadoId) {
         return new Promise((resolve, reject) => {
             const now = new Date();
-            const fechaHoy = now.toISOString().split('T')[0];
-            const horaActualUTC = now.toISOString();
+            const zonedDate = utcToZonedTime(now, VENEZUELA_TIMEZONE);
+            const fechaHoy = format(zonedDate, 'yyyy-MM-dd');
+            const horaActual = format(zonedDate, 'HH:mm:ss');
 
             db.get(querys.getEntradaPendiente, [empleadoId, fechaHoy], (err, row) => {
                 if (err) {
@@ -200,7 +204,7 @@ module.exports = {
 
                 db.run(
                     querys.insertarAsistenciaEntrada,
-                    [empleadoId, fechaHoy, horaActualUTC],
+                    [empleadoId, fechaHoy, horaActual],
                     function(err) {
                         if (err) {
                             return reject(err);
@@ -215,12 +219,13 @@ module.exports = {
     async registrarSalida(empleadoId) {
         return new Promise((resolve, reject) => {
             const now = new Date();
-            const fechaHoy = now.toISOString().split('T')[0];
-            const horaActualUTC = now.toISOString();
+            const zonedDate = utcToZonedTime(now, VENEZUELA_TIMEZONE);
+            const fechaHoy = format(zonedDate, 'yyyy-MM-dd');
+            const horaActual = format(zonedDate, 'HH:mm:ss');
 
             db.run(
                 querys.actualizarAsistenciaSalida,
-                [horaActualUTC, empleadoId, fechaHoy],
+                [horaActual, empleadoId, fechaHoy],
                 function(err) {
                     if (err) {
                         return reject(err);
@@ -240,7 +245,14 @@ module.exports = {
                 if (err) {
                     return reject(err);
                 }
-                resolve(rows);
+                const formattedRows = rows.map(row => {
+                    return {
+                        ...row,
+                        hora_entrada: row.hora_entrada ? format(new Date(`2000-01-01T${row.hora_entrada}`), 'hh:mm:ss a') : null, // Asume que la DB guarda HH:MM:SS
+                        hora_salida: row.hora_salida ? format(new Date(`2000-01-01T${row.hora_salida}`), 'hh:mm:ss a') : null
+                    };
+                });
+                resolve(formattedRows);
             });
         });
     },
@@ -251,7 +263,14 @@ module.exports = {
                 if (err) {
                     return reject(err);
                 }
-                resolve(rows);
+                const formattedRows = rows.map(row => {
+                    return {
+                        ...row,
+                        hora_entrada: row.hora_entrada ? format(new Date(`2000-01-01T${row.hora_entrada}`), 'hh:mm:ss a') : null,
+                        hora_salida: row.hora_salida ? format(new Date(`2000-01-01T${row.hora_salida}`), 'hh:mm:ss a') : null
+                    };
+                });
+                resolve(formattedRows);
             });
         });
     },
@@ -263,7 +282,14 @@ module.exports = {
                 if (err) {
                     return reject(err);
                 }
-                resolve(rows);
+                const formattedRows = rows.map(row => {
+                    return {
+                        ...row,
+                        hora_entrada: row.hora_entrada ? format(new Date(`2000-01-01T${row.hora_entrada}`), 'hh:mm:ss a') : null,
+                        hora_salida: row.hora_salida ? format(new Date(`2000-01-01T${row.hora_salida}`), 'hh:mm:ss a') : null
+                    };
+                });
+                resolve(formattedRows);
             });
         });
     },
@@ -275,7 +301,14 @@ module.exports = {
                 if (err) {
                     return reject(err);
                 }
-                resolve(rows);
+                const formattedRows = rows.map(row => {
+                    return {
+                        ...row,
+                        hora_entrada: row.hora_entrada ? format(new Date(`2000-01-01T${row.hora_entrada}`), 'hh:mm:ss a') : null,
+                        hora_salida: row.hora_salida ? format(new Date(`2000-01-01T${row.hora_salida}`), 'hh:mm:ss a') : null
+                    };
+                });
+                resolve(formattedRows);
             });
         });
     }
