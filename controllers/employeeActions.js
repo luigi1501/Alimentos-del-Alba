@@ -1,4 +1,4 @@
-const db = require('../db/models'); 
+const db = require('../db/models');
 const path = require('path');
 const fs = require('fs');
 const QRCode = require('qrcode');
@@ -42,13 +42,14 @@ const downloadCarnet = async (req, res) => {
             return res.redirect('/auth/panel-empleado');
         }
 
-        const qrCodeData = `ID: ${empleado.id}, Cédula: ${empleado.cedula}, Nombre: ${empleado.nombre} ${empleado.apellido}`;
-        const qrCodeImageBase64 = await QRCode.toDataURL(qrCodeData, { width: 100, margin: 2 });
+        const qrCodeData = `ID: ${empleado.id}\nCédula: ${empleado.cedula}\nNombre: ${empleado.nombre} ${empleado.apellido}`;
+        const qrCodeImageBase64 = await QRCode.toDataURL(qrCodeData, { width: 90, margin: 2 });
 
-        const carnetBackgroundPath = getPublicPath('images/carnet_template.png');
+        const carnetBackgroundPath = getPublicPath('images/carnet_template_vertical.png');
         const companyLogoPath = getPublicPath('images/logo.jpg');
+
         const doc = new PDFDocument({
-            size: [243, 153],
+            size: [153, 243],
             margin: 0
         });
 
@@ -58,51 +59,59 @@ const downloadCarnet = async (req, res) => {
         doc.pipe(res);
 
         if (fs.existsSync(carnetBackgroundPath)) {
-            doc.image(carnetBackgroundPath, 0, 0, { width: 243, height: 153 });
+            doc.image(carnetBackgroundPath, 0, 0, { width: 153, height: 243 });
         } else {
-            console.warn('Advertencia: No se encontró la imagen de fondo del carnet en:', carnetBackgroundPath);
-            doc.rect(0, 0, 243, 153).fill('#e0f7fa');
+            console.warn('Advertencia: No se encontró la imagen de fondo del carnet vertical en:', carnetBackgroundPath);
+            doc.rect(0, 0, 153, 243).fill('#e0f7fa');
         }
+
+        doc.fillColor('#000000')
+           .fontSize(7)
+           .font('Helvetica-Bold')
+           .text('REPÚBLICA BOLIVARIANA DE VENEZUELA', 0, 10, { align: 'center', width: 153 });
 
         if (fs.existsSync(companyLogoPath)) {
-            doc.image(companyLogoPath, 10, 10, { width: 40 });
+            doc.image(companyLogoPath, (153 - 50) / 2, 20, { width: 50 });
         } else {
             console.warn('Advertencia: El logo de la empresa no se encontró en la ruta:', companyLogoPath);
-            doc.fontSize(8).fillColor('gray').text('Logo no disponible', 10, 10, { width: 40, align: 'center' });
+            doc.fontSize(8).fillColor('gray').text('Logo', (153 - 40) / 2, 25, { width: 40, align: 'center' });
         }
 
-        doc.fillColor('#2c3e50')
-           .fontSize(14)
+        doc.fillColor('#c0392b')
+           .fontSize(16)
            .font('Helvetica-Bold')
-           .text('CARNET DEL EMPLEADO', 60, 20, { align: 'left', width: 170 });
-
-        doc.fontSize(10)
-           .font('Helvetica')
-           .text(`Nombre: ${empleado.nombre} ${empleado.apellido}`, 60, 50)
-           .text(`Cédula: ${empleado.cedula}`, 60, 65)
-           .text(`Cargo: ${empleado.cargo}`, 60, 80)
-           .text(`Departamento: ${empleado.departamento}`, 60, 95);
+           .text('ALIMENTOS DEL ALBA', 0, 80, { align: 'center', width: 153 });
 
         if (empleado.foto_perfil) {
             const fotoPerfilFullPath = getPublicPath(empleado.foto_perfil);
             if (fs.existsSync(fotoPerfilFullPath)) {
-                doc.image(fotoPerfilFullPath, 170, 10, { width: 60, height: 60, fit: [60, 60], align: 'center', valign: 'center' });
+                doc.image(fotoPerfilFullPath, (153 - 70) / 2, 100, { width: 70, height: 70, fit: [70, 70], align: 'center', valign: 'center' });
             } else {
                 console.warn('Advertencia: La foto de perfil del empleado no se encontró en la ruta:', fotoPerfilFullPath);
-                doc.rect(170, 10, 60, 60).fill('#cccccc');
-                doc.fillColor('black').fontSize(8).text('Sin Foto', 170, 35, { width: 60, align: 'center' });
+                doc.rect((153 - 70) / 2, 100, 70, 70).fill('#cccccc');
+                doc.fillColor('black').fontSize(8).text('Sin Foto', (153 - 70) / 2, 125, { width: 70, align: 'center' });
             }
         } else {
-            doc.rect(170, 10, 60, 60).fill('#cccccc');
-            doc.fillColor('black').fontSize(8).text('Sin Foto', 170, 35, { width: 60, align: 'center' });
+            doc.rect((153 - 70) / 2, 100, 70, 70).fill('#cccccc');
+            doc.fillColor('black').fontSize(8).text('Sin Foto', (153 - 70) / 2, 125, { width: 70, align: 'center' });
         }
 
-        doc.image(qrCodeImageBase64, 170, 80, { width: 60 });
+        doc.image(qrCodeImageBase64, 10, 100);
 
+        // 7. Detalles del empleado
+        doc.fillColor('#000000')
+           .fontSize(9)
+           .font('Helvetica-Bold')
+           .text(`${empleado.nombre.toUpperCase()} ${empleado.apellido.toUpperCase()}`, 0, 180, { align: 'center', width: 153 })
+           .font('Helvetica')
+           .text(`${empleado.cedula}`, 0, 190, { align: 'center', width: 153 });
+
+        doc.fontSize(8)
+           .text(`${empleado.cargo.toUpperCase()}`, 0, 205, { align: 'center', width: 153 });
         doc.fillColor('#555')
            .fontSize(7)
-           .text('Alimentos del Alba C.A.', 10, 135, { align: 'left' })
-           .text('¡Nutriendo a Venezuela!', 10, 145, { align: 'left' });
+           .text('Alimentos del Alba C.A.', 0, 225, { align: 'center', width: 153 })
+           .text('¡Nutriendo a Venezuela!', 0, 235, { align: 'center', width: 153 });
 
         doc.end();
 
