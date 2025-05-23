@@ -11,6 +11,8 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.set('trust proxy', 1);
+
 const db = require('./db/models');
 
 app.use(session({
@@ -19,6 +21,7 @@ app.use(session({
         table: 'sessions',
         dir: './db'
     }),
+
     secret: process.env.SESSION_SECRET || 'una_cadena_secreta_de_respaldo',
     resave: false,
     saveUninitialized: false,
@@ -42,6 +45,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -51,14 +55,12 @@ const authRouter = require('./routes/auth');
 const indexRouter = require('./routes/index');
 app.use('/auth', authRouter);
 app.use('/', indexRouter);
-
 app.use((req, res, next) => {
     res.status(404).send("Lo siento, no puedo encontrar eso!");
 });
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
-
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
             req.session.message = { type: 'danger', text: 'El archivo es demasiado grande (máximo 5MB).' };
