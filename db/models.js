@@ -1,7 +1,8 @@
 const db = require('./connection');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const { format, utcToZonedTime } = require('date-fns-tz');
+const { format } = require('date-fns');
+const { utcToZonedTime } = require('date-fns-tz');
 
 let querys = {
     getempleados: 'SELECT id, usuario, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code, foto_perfil FROM empleados',
@@ -248,7 +249,7 @@ module.exports = {
                 const formattedRows = rows.map(row => {
                     return {
                         ...row,
-                        hora_entrada: row.hora_entrada ? format(new Date(`2000-01-01T${row.hora_entrada}`), 'hh:mm:ss a') : null, // Asume que la DB guarda HH:MM:SS
+                        hora_entrada: row.hora_entrada ? format(new Date(`2000-01-01T${row.hora_entrada}`), 'hh:mm:ss a') : null,
                         hora_salida: row.hora_salida ? format(new Date(`2000-01-01T${row.hora_salida}`), 'hh:mm:ss a') : null
                     };
                 });
