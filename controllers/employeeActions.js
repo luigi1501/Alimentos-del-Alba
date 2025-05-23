@@ -1,8 +1,12 @@
-const db = require('../db/models');
+const db = require('../db/models'); 
 const path = require('path');
 const fs = require('fs');
 const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
+
+const getPublicPath = (relativePath) => {
+    return path.join(__dirname, '..', 'public', relativePath);
+};
 
 const uploadProfilePhoto = async (req, res) => {
     try {
@@ -38,45 +42,58 @@ const downloadCarnet = async (req, res) => {
             return res.redirect('/auth/panel-empleado');
         }
 
-        const qrCodeData = empleado.qr_code || `ID: ${empleado.id}, Nombre: ${empleado.nombre}`;
+        const qrCodeData = `ID: ${empleado.id}, Cédula: ${empleado.cedula}, Nombre: ${empleado.nombre} ${empleado.apellido}`;
         const qrCodeImageBase64 = await QRCode.toDataURL(qrCodeData, { width: 100, margin: 2 });
-        const logoPath = path.join(__dirname, '..', 'public', 'images', 'logo.jpg');
 
+        // Rutas a tus imágenes
+        const carnetBackgroundPath = getPublicPath('images/carnet_template.png');
+        const companyLogoPath = getPublicPath('images/logo.jpg');
         const doc = new PDFDocument({
             size: [243, 153],
-            margin: 10
+            margin: 0
         });
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="carnet_${empleado.nombre}_${empleado.apellido}.pdf"`);
+        res.setHeader('Content-Disposition', `attachment; filename="carnet_${empleado.nombre.replace(/\s/g, '')}_${empleado.apellido.replace(/\s/g, '')}.pdf"`);
 
         doc.pipe(res);
 
-        doc.image('../images/logo.jpg', 0, 0, { width: 243, height: 153 });
-
-        doc.rect(0, 0, 243, 153).fill('#f0f8ff'); 
-        if (fs.existsSync(logoPath)) {
-            doc.image(logoPath, 10, 10, { width: 40 });
+        if (fs.existsSync(carnetBackgroundPath)) {
+            doc.image(carnetBackgroundPath, 0, 0, { width: 243, height: 153 });
         } else {
-            console.warn('Advertencia: El logo de la empresa no se encontró en la ruta:', logoPath);
+            console.warn('Advertencia: No se encontró la imagen de fondo del carnet en:', carnetBackgroundPath);
+            doc.rect(0, 0, 243, 153).fill('#e0f7fa');
+        }
+
+        if (fs.existsSync(companyLogoPath)) {
+            doc.image(companyLogoPath, 10, 10, { width: 40 });
+        } else {
+            console.warn('Advertencia: El logo de la empresa no se encontró en la ruta:', companyLogoPath);
             doc.fontSize(8).fillColor('gray').text('Logo no disponible', 10, 10, { width: 40, align: 'center' });
         }
 
         doc.fillColor('#2c3e50')
            .fontSize(14)
            .font('Helvetica-Bold')
-           .text('CARNET DE EMPLEADO', 60, 20, { align: 'center', width: 170 });
+           .text('CARNET DEL EMPLEADO', 60, 20, { align: 'left', width: 170 });
 
         doc.fontSize(10)
            .font('Helvetica')
            .text(`Nombre: ${empleado.nombre} ${empleado.apellido}`, 60, 50)
            .text(`Cédula: ${empleado.cedula}`, 60, 65)
            .text(`Cargo: ${empleado.cargo}`, 60, 80)
-           .text(`Departamento: ${empleado.departamento}`, 60, 95)
-           .text(`Correo: ${empleado.correo}`, 60, 110);
+           .text(`Departamento: ${empleado.departamento}`, 60, 95);
+
+        if (empleado.correo) {
+            let displayCorreo = empleado.correo;
+            if (displayCorreo.length > 25) {
+                displayCorreo = displayCorreo.substring(0, 22) + '...';
+            }
+            doc.text(`Correo: ${displayCorreo}`, 60, 110);
+        }
 
         if (empleado.foto_perfil) {
-            const fotoPerfilFullPath = path.join(__dirname, '..', 'public', empleado.foto_perfil);
+            const fotoPerfilFullPath = getPublicPath(empleado.foto_perfil);
             if (fs.existsSync(fotoPerfilFullPath)) {
                 doc.image(fotoPerfilFullPath, 170, 10, { width: 60, height: 60, fit: [60, 60], align: 'center', valign: 'center' });
             } else {
@@ -90,6 +107,7 @@ const downloadCarnet = async (req, res) => {
         }
 
         doc.image(qrCodeImageBase64, 170, 80, { width: 60 });
+
         doc.fillColor('#555')
            .fontSize(7)
            .text('Alimentos del Alba C.A.', 10, 135, { align: 'left' })

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { registrarEmpleado, obtenerEmpleadoPorUsuario, verificarPassword, getEmpleadoPorId, updateempleados } = require('../db/models');
+const { registrarEmpleado, obtenerEmpleadoPorUsuario, verificarPassword, getEmpleadoPorId, updateempleados, updateEmpleadoFotoPerfil } = require('../db/models');
 const db = require('../db/connection');
 const { isAuthenticated, isAdmin } = require('../middleware/authMiddleware');
 const path = require('path');
@@ -35,9 +35,6 @@ const upload = multer({
 });
 
 router.get('/login-empleado', (req, res) => {
-    console.log("Accediendo a /auth/login-empleado (GET). Estado de la sesión:");
-    console.log("    req.session:", req.session);
-    console.log("    req.session.userId:", req.session.userId);
 
     if (req.session && req.session.userId) {
         console.log("Sesión de empleado detectada en /auth/login-empleado (GET). Redirigiendo a panel.");
@@ -49,13 +46,9 @@ router.get('/login-empleado', (req, res) => {
 router.post('/login-empleado', async (req, res) => {
     const { usuario, password } = req.body;
 
-    console.log("--- Intento de Login Empleado (POST /auth/login-empleado) ---");
-    console.log("Valores recibidos del formulario:");
-    console.log("    usuario ingresado:", usuario);
-    console.log("    password ingresado:", password ? '********' : 'Vacío');
-
     try {
         const empleado = await obtenerEmpleadoPorUsuario(usuario);
+
         if (empleado) {
             console.log('Empleado encontrado para', usuario + ' (ID:', empleado.id + ')');
             const passwordValido = await verificarPassword(password, empleado.password_hash);
@@ -83,9 +76,6 @@ router.post('/login-empleado', async (req, res) => {
 });
 
 router.get('/historial-asistencia', isAuthenticated, async (req, res) => {
-    console.log("Accediendo a /auth/historial-asistencia. Estado de la sesión (después de isAuthenticated):");
-    console.log("    req.session:", req.session);
-    console.log("    req.session.userId:", req.session.userId);
 
     try {
         const historialPropio = await db.getHistorialAsistenciaPorEmpleado(req.session.userId);
@@ -102,9 +92,6 @@ router.get('/registro-empleado', (req, res) => {
 
 router.post('/registro-empleado', async (req, res) => {
     const { usuario, password, nombre, apellido, cedula, cargo, departamento, telefono, correo } = req.body;
-
-    console.log("--- Intento de Registro de Empleado (POST /auth/registro-empleado) ---");
-    console.log("Datos recibidos:", { usuario, nombre, cedula });
 
     try {
         const empleadoId = await registrarEmpleado(usuario, password, nombre, apellido, parseInt(cedula), cargo, departamento, parseInt(telefono), correo);
@@ -151,12 +138,10 @@ router.get('/logout', (req, res, next) => {
 });
 
 router.post('/empleados/perfil/upload-foto', isAuthenticated, upload.single('profilePic'), employeeActions.uploadProfilePhoto);
-router.get('/empleados/descargar-carnet', isAuthenticated, employeeActions.downloadCarnet);
+
+router.get('/empleados/descargar-carnet-pdf', isAuthenticated, employeeActions.downloadCarnet);
 
 router.get('/panel-empleado', isAuthenticated, async (req, res) => {
-    console.log("Accediendo a /auth/panel-empleado. Estado de la sesión (después de isAuthenticated):");
-    console.log("    req.session:", req.session);
-    console.log("    req.session.userId:", req.session.userId);
 
     try {
         const empleado = await getEmpleadoPorId(req.session.userId);
@@ -175,6 +160,9 @@ router.get('/panel-empleado', isAuthenticated, async (req, res) => {
             qrCodeUrl: qrCodeUrl,
             message: req.session.message
         });
+
+        req.session.message = null;
+
     } catch (error) {
         console.error('Error al cargar el panel del empleado:', error);
         req.session.message = { type: 'danger', text: 'No se pudo cargar la información de tu panel. Por favor, intenta de nuevo.' };
