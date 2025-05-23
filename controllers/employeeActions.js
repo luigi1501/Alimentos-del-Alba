@@ -12,7 +12,7 @@ const uploadProfilePhoto = async (req, res) => {
         const userId = req.session.userId;
         const newPhotoPath = '/uploads/' + req.file.filename;
 
-        await db.updateEmpleadoPhoto(userId, newPhotoPath);
+        await db.updateEmpleadoFotoPerfil(userId, newPhotoPath);
 
         req.session.message = { type: 'success', text: 'Foto de perfil actualizada exitosamente.' };
         res.redirect('/panel-empleado');
