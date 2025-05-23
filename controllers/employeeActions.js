@@ -6,7 +6,7 @@ const uploadProfilePhoto = async (req, res) => {
     try {
         if (!req.file) {
             req.session.message = { type: 'danger', text: 'No se seleccionó ninguna imagen.' };
-            return res.redirect('/panel-empleado');
+            return res.redirect('/auth/panel-empleado');
         }
 
         const userId = req.session.userId;
@@ -15,7 +15,7 @@ const uploadProfilePhoto = async (req, res) => {
         await db.updateEmpleadoFotoPerfil(userId, newPhotoPath);
 
         req.session.message = { type: 'success', text: 'Foto de perfil actualizada exitosamente.' };
-        res.redirect('/panel-empleado');
+        res.redirect('/auth/panel-empleado');
 
     } catch (error) {
         console.error('Error al subir la foto de perfil:', error);
@@ -23,7 +23,7 @@ const uploadProfilePhoto = async (req, res) => {
             fs.unlinkSync(req.file.path);
         }
         req.session.message = { type: 'danger', text: 'Hubo un error al actualizar la foto de perfil.' };
-        res.redirect('/panel-empleado');
+        res.redirect('/auth/panel-empleado');
     }
 };
 
@@ -33,7 +33,7 @@ const downloadCarnet = async (req, res) => {
 
         if (!empleado) {
             req.session.message = { type: 'danger', text: 'No se encontró la información del empleado.' };
-            return res.redirect('/panel-empleado');
+            return res.redirect('/auth/panel-empleado');
         }
 
         const qrCodeData = empleado.qr_code || `ID: ${empleado.id}, Nombre: ${empleado.nombre}`;
@@ -48,7 +48,7 @@ const downloadCarnet = async (req, res) => {
     } catch (error) {
         console.error('Error al descargar el carnet:', error);
         req.session.message = { type: 'danger', text: 'Hubo un error al generar o descargar el carnet.' };
-        res.redirect('/panel-empleado');
+        res.redirect('/auth/panel-empleado');
     }
 };
 
