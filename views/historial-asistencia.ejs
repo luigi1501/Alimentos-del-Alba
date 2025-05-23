@@ -35,31 +35,37 @@
         <% } %>
 
         <% if (historial && historial.length > 0) { %>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>ID Asistencia</th>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>Cargo</th>
-                        <th>Departamento</th>
-                        <th>Cédula</th>
-                        <th>Fecha</th>        <th>Hora Entrada</th> <th>Hora Salida</th>  </tr>
-                </thead>
-                <tbody>
-                    <% historial.forEach(registro => { %>
+            <div class="table-responsive"> <table class="table table-striped">
+                    <thead>
                         <tr>
-                            <td><%= registro.id_asistencia %></td>
-                            <td><%= registro.nombre %></td>
-                            <td><%= registro.apellido %></td>
-                            <td><%= registro.cargo %></td>
-                            <td><%= registro.departamento %></td>
-                            <td><%= registro.cedula %></td>
-                            <td><%= new Date(registro.fecha).toLocaleDateString() %></td> <td><%= registro.hora_entrada %></td>                          <td><%= registro.hora_salida || 'Pendiente' %></td>          </tr>
-                    <% }); %>
-                </tbody>
-            </table>
-        <% } else { %>
+                            <th>ID Asistencia</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Cargo</th>
+                            <th>Departamento</th>
+                            <th>Cédula</th>
+                            <th>Fecha</th>
+                            <th>Hora Entrada</th>
+                            <th>Hora Salida</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% historial.forEach(registro => { %>
+                            <tr>
+                                <td><%= registro.id_asistencia %></td>
+                                <td><%= registro.nombre %></td>
+                                <td><%= registro.apellido %></td>
+                                <td><%= registro.cargo %></td>
+                                <td><%= registro.departamento %></td>
+                                <td><%= registro.cedula %></td>
+                                <td><%= new Date(registro.fecha).toLocaleDateString() %></td>
+                                <td><%= registro.hora_entrada %></td>
+                                <td><%= registro.hora_salida || 'Pendiente' %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div> <% } else { %>
             <p>No hay registros de asistencia disponibles.</p>
         <% } %>
     </div>

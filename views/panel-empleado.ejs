@@ -21,7 +21,7 @@
     <div class="container mt-4">
         <% if (locals.message && locals.message.text) { %>
             <div class="alert alert-<%= locals.message.type === 'success' ? 'success' : 'danger' %> alert-dismissible fade show" role="alert">
-                <%- locals.message.text %>  <--- CAMBIADO
+                <%- locals.message.text %>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <% } %>
@@ -37,13 +37,13 @@
                             profilePicSrc = empleado.foto_perfil;
                         }
                     %>
-                    <img src="<%- profilePicSrc %>" alt="Foto de Perfil">  <--- CAMBIADO
+                    <img src="<%- profilePicSrc %>" alt="Foto de Perfil">
                 </div>
                 <div class="employee-details">
-                    <h3><%- empleado.nombre %> <%- empleado.apellido || '' %></h3>  <--- CAMBIADO
-                    <p><strong>Cédula:</strong> <%- empleado.cedula %></p>  <--- CAMBIADO
-                    <p><strong>Cargo:</strong> <%- empleado.cargo %></p>  <--- CAMBIADO
-                    <p><strong>Departamento:</strong> <%- empleado.departamento %></p>  <--- CAMBIADO
+                    <h3><%- empleado.nombre %> <%- empleado.apellido || '' %></h3>
+                    <p><strong>Cédula:</strong> <%- empleado.cedula %></p>
+                    <p><strong>Cargo:</strong> <%- empleado.cargo %></p>
+                    <p><strong>Departamento:</strong> <%- empleado.departamento %></p>
                 </div>
             </div>
 
@@ -76,7 +76,7 @@
             <div class="qr-code mt-4">
                 <h3>Tu Código QR de Asistencia</h3>
                 <% if (locals.qrCodeUrl) { %>
-                    <img src="<%- locals.qrCodeUrl %>" alt="Código QR de Asistencia" class="img-fluid" style="max-width: 200px;">  <--- CAMBIADO
+                    <img src="<%- locals.qrCodeUrl %>" alt="Código QR de Asistencia" class="img-fluid" style="max-width: 200px;">
                     <p class="text-muted mt-2">Utiliza este código para registrar tu asistencia al ingresar y salir.</p>
                 <% } else { %>
                     <div class="alert alert-warning" role="alert">
