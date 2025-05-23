@@ -44,9 +44,7 @@ const downloadCarnet = async (req, res) => {
 
         const qrCodeData = `ID:${empleado.id}|CI:${empleado.cedula}`;
         const qrCodeImageBase64 = await QRCode.toDataURL(qrCodeData, { width: 60, margin: 1 });
-
-        const carnetBackgroundPath = getPublicPath('images/carnet_template_vertical.png');
-        const companyLogoPath = getPublicPath('images/logo.jpg'); 
+        const companyLogoPath = getPublicPath('images/logo.jpg');
 
         const doc = new PDFDocument({
             size: [153, 243],
@@ -58,36 +56,35 @@ const downloadCarnet = async (req, res) => {
 
         doc.pipe(res);
 
-        if (fs.existsSync(carnetBackgroundPath)) {
-            doc.image(carnetBackgroundPath, 0, 0, { width: 153, height: 243 });
-        } else {
-            console.warn('Advertencia: No se encontró la imagen de fondo del carnet vertical en:', carnetBackgroundPath);
-            doc.rect(0, 0, 153, 243).fill('#e0f7fa');
-        }
+        doc.rect(0, 0, 153, 243).fill('#F0F8FF');
+        doc.lineWidth(1);
+        doc.strokeColor('#A9A9A9');
+        doc.rect(5, 5, 143, 233).stroke();
 
         doc.fillColor('#000000')
            .fontSize(7)
            .font('Helvetica-Bold')
-           .text('REPÚBLICA BOLIVARIANA DE VENEZUELA', 0, 10, { align: 'center', width: 153 });
+           .text('REPÚBLICA BOLIVARIANA DE VENEZUELA', 0, 15, { align: 'center', width: 153 });
 
         if (fs.existsSync(companyLogoPath)) {
-            doc.image(companyLogoPath, (153 - 50) / 2, 25, { width: 50 });
+            const logoWidth = 50;
+            doc.image(companyLogoPath, (153 - logoWidth) / 2, 30, { width: logoWidth });
         } else {
             console.warn('Advertencia: El logo de la empresa no se encontró en la ruta:', companyLogoPath);
-            doc.fontSize(8).fillColor('gray').text('Logo', (153 - 40) / 2, 30, { width: 40, align: 'center' });
+            doc.fontSize(8).fillColor('gray').text('Logo', (153 - 40) / 2, 35, { width: 40, align: 'center' });
         }
 
         doc.fillColor('#c0392b')
            .fontSize(14)
            .font('Helvetica-Bold')
-           .text('ALIMENTOS DEL ALBA', 0, 80, { align: 'center', width: 153 });
+           .text('ALIMENTOS DEL ALBA', 0, 70, { align: 'center', width: 153 });
 
-        const photoQrAreaX = 10;
-        const photoQrAreaWidth = 153 - (photoQrAreaX * 2); 
+        const photoQrAreaY = 95;
+
         const photoWidth = 60;
         const photoHeight = 60;
         const photoX = (153 - photoWidth) / 2;
-        const photoY = 105;
+        const photoY = photoQrAreaY;
 
         if (empleado.foto_perfil) {
             const fotoPerfilFullPath = getPublicPath(empleado.foto_perfil);
@@ -105,7 +102,7 @@ const downloadCarnet = async (req, res) => {
 
         const qrWidth = 70;
         const qrX = (153 - qrWidth) / 2;
-        const qrY = photoY + photoHeight + 10;
+        const qrY = photoY + photoHeight + 8;
 
         doc.image(qrCodeImageBase64, qrX, qrY, { width: qrWidth });
 
@@ -117,7 +114,7 @@ const downloadCarnet = async (req, res) => {
            .text(`${empleado.nombre.toUpperCase()} ${empleado.apellido.toUpperCase()}`, 0, currentY, { align: 'center', width: 153 });
 
         currentY += 15;
-        doc.fontSize(10) 
+        doc.fontSize(10)
            .font('Helvetica')
            .text(`${empleado.cedula}`, 0, currentY, { align: 'center', width: 153 });
 
@@ -126,10 +123,21 @@ const downloadCarnet = async (req, res) => {
            .text(`${empleado.cargo.toUpperCase()}`, 0, currentY, { align: 'center', width: 153 });
 
 
-        doc.fillColor('#555')
+        if (empleado.departamento) {
+            currentY += 12;
+            doc.fontSize(8)
+            .text(`${empleado.departamento.toUpperCase()}`, 0, currentY, { align: 'center', width: 153 });
+        }
+
+        const footerHeight = 35; 
+        const footerY = 243 - footerHeight;
+
+        doc.rect(0, footerY, 153, footerHeight).fill('#ADD8E6');
+
+        doc.fillColor('#000000')
            .fontSize(7)
-           .text('Alimentos del Alba C.A.', 0, 225, { align: 'center', width: 153 })
-           .text('¡Nutriendo a Venezuela!', 0, 235, { align: 'center', width: 153 });
+           .text('Alimentos del Alba C.A.', 0, footerY + 8, { align: 'center', width: 153 })
+           .text('¡Nutriendo a Venezuela!', 0, footerY + 18, { align: 'center', width: 153 });
 
         doc.end();
 
