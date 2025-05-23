@@ -6,74 +6,82 @@
     <title>Alimentos del Alba</title>
     <link rel="stylesheet" href="../stylesheets/paginaprin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="shortcut icon" href="../images/logo2.jpg" type="image/x-icon">
+    <link rel="shortcut icon" href="../images/logo.jpg" type="image/x-icon">
 </head>
 <body>
-    <header>
-        <nav class="main-nav">
-            <div class="logo">
-                <img src="../images/logo.jpg" alt="Logo de Alimentos del Alba">
-            </div>
-            <h1 class="site-title">Alimentos del Alba</h1>
-            <button class="hamburger-menu">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </button>
-            <div class="nav-links">
-                <a class="nav-btn" href="login">Iniciar Sesión Admin</a>
-                <a class="nav-btn" href="/auth/login-empleado">Iniciar Sesión Empleado</a>
-                <a href="#about">Quiénes Somos</a>
-                <a href="#mission">Misión</a>
-                <a href="#vision">Visión</a>
-            </div>
+    <header class="main-navbar">
+        <div class="navbar-brand">
+            <img src="../images/logo2.jpg" alt="Logo de Alimentos del Alba" class="logo">
+            <span class="brand-text">Alimentos del Alba</span>
+        </div>
+        
+        <button class="hamburger-menu" aria-label="Toggle navigation">
+            <span class="line"></span>
+            <span class="line"></span>
+            <span class="line"></span>
+        </button>
+
+        <nav class="nav-links">
+            <a href="/login" class="nav-button">Iniciar Sesión Admin</a>
+            <a href="/auth/login-empleado" class="nav-button">Iniciar Sesión Empleado</a>
+            <a href="#about" class="nav-button">Quiénes Somos</a>
+            <a href="#mission" class="nav-button">Misión</a>
+            <a href="#vision" class="nav-button">Visión</a>
         </nav>
     </header>
-<main>
-    <section class="banner">
-        <h2>Bienvenido a Nuestra Plataforma</h2>
-        <p>En el corazón de la tierra, donde los primeros rayos del sol acarician los campos, nace Alimentos del Alba. Somos una empresa dedicada a cultivar y ofrecer productos alimenticios de la más alta calidad, inspirados en la frescura y vitalidad del amanecer.</p>
-    </section>
 
-    <section id="about" class="content-section hidden">
-        <h2>Quiénes Somos</h2>
-        <p>Alimentos del Alba es una corporación venezolana de alimentos y bebidas con una profunda tradición de calidad y compromiso con el bienestar de las familias del país. Nacimos con la visión de nutrir a Venezuela, ofreciendo productos esenciales y placenteros que forman parte de la vida cotidiana. Somos una empresa que valora la tierra, el trabajo de nuestra gente y la confianza de nuestros consumidores. Nos esforzamos por ser un motor de desarrollo, generando oportunidades y contribuyendo al crecimiento sostenible de las comunidades donde operamos.</p>
-    </section>
+    <main>
+        <section class="banner">
+            <h2>Bienvenido a Nuestra Plataforma</h2>
+            <p>En el corazón de la tierra, donde los primeros rayos del sol acarician los campos, nace Alimentos del Alba. Somos una empresa dedicada a cultivar y ofrecer productos alimenticios de la más alta calidad, inspirados en la frescura y vitalidad del amanecer.</p>
+        </section>
 
-    <section id="mission" class="content-section hidden">
-        <h2>Nuestra Misión</h2>
-        <p>Nutrir a Venezuela con alimentos y bebidas de alta calidad, accesibles y confiables, que enriquezcan la vida diaria de las familias y contribuyan al desarrollo sostenible del país.</p>
-    </section>
+        <section id="about" class="content-section hidden">
+            <h2>Quiénes Somos</h2>
+            <p>Alimentos del Alba es una corporación venezolana de alimentos y bebidas con una profunda tradición de calidad y compromiso con el bienestar de las familias del país. Nacimos con la visión de nutrir a Venezuela, ofreciendo productos esenciales y placenteros que forman parte de la vida cotidiana. Somos una empresa que valora la tierra, el trabajo de nuestra gente y la confianza de nuestros consumidores. Nos esforzamos por ser un motor de desarrollo, generando oportunidades y contribuyendo al crecimiento sostenible de las comunidades donde operamos.</p>
+        </section>
 
-    <section id="vision" class="content-section hidden">
-        <h2>Nuestra Visión</h2>
-        <p>Ser la empresa líder y referente en el sector de alimentos y bebidas en Venezuela, reconocida por nuestra calidad, innovación, compromiso social y por ser parte integral de la mesa de cada hogar venezolano. Aspiramos a expandir nuestro alcance, llevando el sabor y la calidad de Alimentos del Alba a nuevos mercados, manteniendo siempre nuestra esencia y valores fundamentales</p>
-    </section>
-</main>
+        <section id="mission" class="content-section hidden">
+            <h2>Nuestra Misión</h2>
+            <p>Nutrir a Venezuela con alimentos y bebidas de alta calidad, accesibles y confiables, que enriquezcan la vida diaria de las familias y contribuyan al desarrollo sostenible del país.</p>
+        </section>
 
-<footer>
-    <p>&copy; 2025 Alimentos del Alba. Todos los derechos reservados.</p>
-    <p>Contacto: soporte@miplataforma.com</p>
-    <div class="social-links">
-        <a href="https://www.facebook.com" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.twitter.com" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
-        <a href="https://www.instagram.com" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
-        <a href="https://www.linkedin.com" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-    </div>
-</footer>
+        <section id="vision" class="content-section hidden">
+            <h2>Nuestra Visión</h2>
+            <p>Ser la empresa líder y referente en el sector de alimentos y bebidas en Venezuela, reconocida por nuestra calidad, innovación, compromiso social y por ser parte integral de la mesa de cada hogar venezolano. Aspiramos a expandir nuestro alcance, llevando el sabor y la calidad de Alimentos del Alba a nuevos mercados, manteniendo siempre nuestra esencia y valores fundamentales</p>
+        </section>
+    </main>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const hamburgerMenu = document.querySelector('.hamburger-menu');
-        const navLinks = document.querySelector('.nav-links');
+    <footer>
+        <p>&copy; 2025 Alimentos del Alba. Todos los derechos reservados.</p>
+        <p>Contacto: soporte@miplataforma.com</p>
+        <div class="social-links">
+            <a href="https://www.facebook.com" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://www.twitter.com" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.instagram.com" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.linkedin.com" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+    </footer>
 
-        if (hamburgerMenu && navLinks) {
-            hamburgerMenu.addEventListener('click', function() {
-                navLinks.classList.toggle('active');
-                hamburgerMenu.classList.toggle('active');
-            });
-        }
-    });
-</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburger = document.querySelector('.hamburger-menu');
+            const navLinks = document.querySelector('.nav-links');
+
+            if (hamburger && navLinks) {
+                hamburger.addEventListener('click', () => {
+                    navLinks.classList.toggle('active');
+                    hamburger.classList.toggle('open');
+                });
+
+                navLinks.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        navLinks.classList.remove('active');
+                        hamburger.classList.remove('open');
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>
