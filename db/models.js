@@ -1,8 +1,6 @@
 const db = require('./connection');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const { format } = require('date-fns');
-const { utcToZonedTime } = require('date-fns-tz');
 
 let querys = {
     getempleados: 'SELECT id, usuario, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code, foto_perfil FROM empleados',
@@ -22,8 +20,6 @@ let querys = {
     getHistorialAsistenciaPorFecha: 'SELECT ha.id_asistencia, e.nombre, e.apellido, e.cargo, e.departamento, e.cedula, ha.fecha, ha.hora_entrada, ha.hora_salida FROM historial_asistencia ha JOIN empleados e ON ha.empleado_id = e.id WHERE ha.fecha = ? ORDER BY ha.fecha DESC, ha.hora_entrada DESC',
     getHistorialAsistenciaPorEmpleadoYFecha: 'SELECT ha.id_asistencia, ha.fecha, ha.hora_entrada, ha.hora_salida FROM historial_asistencia ha WHERE ha.empleado_id = ? AND ha.fecha = ? ORDER BY ha.fecha DESC, ha.hora_entrada DESC'
 };
-
-const VENEZUELA_TIMEZONE = 'America/Caracas';
 
 module.exports = {
 
@@ -191,9 +187,8 @@ module.exports = {
     async registrarEntrada(empleadoId) {
         return new Promise((resolve, reject) => {
             const now = new Date();
-            const zonedDate = utcToZonedTime(now, VENEZUELA_TIMEZONE);
-            const fechaHoy = format(zonedDate, 'yyyy-MM-dd');
-            const horaActual = format(zonedDate, 'HH:mm:ss');
+            const fechaHoy = now.toISOString().split('T')[0];
+            const horaActual = now.toISOString();
 
             db.get(querys.getEntradaPendiente, [empleadoId, fechaHoy], (err, row) => {
                 if (err) {
@@ -220,9 +215,8 @@ module.exports = {
     async registrarSalida(empleadoId) {
         return new Promise((resolve, reject) => {
             const now = new Date();
-            const zonedDate = utcToZonedTime(now, VENEZUELA_TIMEZONE);
-            const fechaHoy = format(zonedDate, 'yyyy-MM-dd');
-            const horaActual = format(zonedDate, 'HH:mm:ss');
+            const fechaHoy = now.toISOString().split('T')[0];
+            const horaActual = now.toISOString();
 
             db.run(
                 querys.actualizarAsistenciaSalida,
@@ -249,8 +243,8 @@ module.exports = {
                 const formattedRows = rows.map(row => {
                     return {
                         ...row,
-                        hora_entrada: row.hora_entrada ? format(new Date(`2000-01-01T${row.hora_entrada}`), 'hh:mm:ss a') : null,
-                        hora_salida: row.hora_salida ? format(new Date(`2000-01-01T${row.hora_salida}`), 'hh:mm:ss a') : null
+                        hora_entrada: row.hora_entrada ? new Date(row.hora_entrada).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null,
+                        hora_salida: row.hora_salida ? new Date(row.hora_salida).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null
                     };
                 });
                 resolve(formattedRows);
@@ -267,8 +261,8 @@ module.exports = {
                 const formattedRows = rows.map(row => {
                     return {
                         ...row,
-                        hora_entrada: row.hora_entrada ? format(new Date(`2000-01-01T${row.hora_entrada}`), 'hh:mm:ss a') : null,
-                        hora_salida: row.hora_salida ? format(new Date(`2000-01-01T${row.hora_salida}`), 'hh:mm:ss a') : null
+                        hora_entrada: row.hora_entrada ? new Date(row.hora_entrada).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null,
+                        hora_salida: row.hora_salida ? new Date(row.hora_salida).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null
                     };
                 });
                 resolve(formattedRows);
@@ -278,16 +272,18 @@ module.exports = {
 
     async getHistorialAsistenciaPorFecha(fecha) {
         return new Promise((resolve, reject) => {
-            const formattedDate = new Date(fecha).toISOString().split('T')[0];
-            db.all(querys.getHistorialAsistenciaPorFecha, [formattedDate], (err, rows) => {
+            const searchDate = new Date(fecha);
+            const formattedSearchDate = `${searchDate.getFullYear()}-${(searchDate.getMonth() + 1).toString().padStart(2, '0')}-${searchDate.getDate().toString().padStart(2, '0')}`;
+            
+            db.all(querys.getHistorialAsistenciaPorFecha, [formattedSearchDate], (err, rows) => {
                 if (err) {
                     return reject(err);
                 }
                 const formattedRows = rows.map(row => {
                     return {
                         ...row,
-                        hora_entrada: row.hora_entrada ? format(new Date(`2000-01-01T${row.hora_entrada}`), 'hh:mm:ss a') : null,
-                        hora_salida: row.hora_salida ? format(new Date(`2000-01-01T${row.hora_salida}`), 'hh:mm:ss a') : null
+                        hora_entrada: row.hora_entrada ? new Date(row.hora_entrada).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null,
+                        hora_salida: row.hora_salida ? new Date(row.hora_salida).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null
                     };
                 });
                 resolve(formattedRows);
@@ -297,16 +293,18 @@ module.exports = {
 
     async getHistorialAsistenciaPorEmpleadoYFecha(id_empleado, fecha) {
         return new Promise((resolve, reject) => {
-            const formattedDate = new Date(fecha).toISOString().split('T')[0];
-            db.all(querys.getHistorialAsistenciaPorEmpleadoYFecha, [id_empleado, formattedDate], (err, rows) => {
+            const searchDate = new Date(fecha);
+            const formattedSearchDate = `${searchDate.getFullYear()}-${(searchDate.getMonth() + 1).toString().padStart(2, '0')}-${searchDate.getDate().toString().padStart(2, '0')}`;
+
+            db.all(querys.getHistorialAsistenciaPorEmpleadoYFecha, [id_empleado, formattedSearchDate], (err, rows) => {
                 if (err) {
                     return reject(err);
                 }
                 const formattedRows = rows.map(row => {
                     return {
                         ...row,
-                        hora_entrada: row.hora_entrada ? format(new Date(`2000-01-01T${row.hora_entrada}`), 'hh:mm:ss a') : null,
-                        hora_salida: row.hora_salida ? format(new Date(`2000-01-01T${row.hora_salida}`), 'hh:mm:ss a') : null
+                        hora_entrada: row.hora_entrada ? new Date(row.hora_entrada).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null,
+                        hora_salida: row.hora_salida ? new Date(row.hora_salida).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null
                     };
                 });
                 resolve(formattedRows);
