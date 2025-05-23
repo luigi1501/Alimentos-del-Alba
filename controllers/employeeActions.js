@@ -45,7 +45,6 @@ const downloadCarnet = async (req, res) => {
         const qrCodeData = `ID: ${empleado.id}, Cédula: ${empleado.cedula}, Nombre: ${empleado.nombre} ${empleado.apellido}`;
         const qrCodeImageBase64 = await QRCode.toDataURL(qrCodeData, { width: 100, margin: 2 });
 
-        // Rutas a tus imágenes
         const carnetBackgroundPath = getPublicPath('images/carnet_template.png');
         const companyLogoPath = getPublicPath('images/logo.jpg');
         const doc = new PDFDocument({
@@ -83,14 +82,6 @@ const downloadCarnet = async (req, res) => {
            .text(`Cédula: ${empleado.cedula}`, 60, 65)
            .text(`Cargo: ${empleado.cargo}`, 60, 80)
            .text(`Departamento: ${empleado.departamento}`, 60, 95);
-
-        if (empleado.correo) {
-            let displayCorreo = empleado.correo;
-            if (displayCorreo.length > 25) {
-                displayCorreo = displayCorreo.substring(0, 22) + '...';
-            }
-            doc.text(`Correo: ${displayCorreo}`, 60, 110);
-        }
 
         if (empleado.foto_perfil) {
             const fotoPerfilFullPath = getPublicPath(empleado.foto_perfil);
