@@ -42,8 +42,8 @@ const downloadCarnet = async (req, res) => {
             return res.redirect('/auth/panel-empleado');
         }
 
-        const qrCodeData = `ID: ${empleado.id}\nCédula: ${empleado.cedula}\nNombre: ${empleado.nombre} ${empleado.apellido}`;
-        const qrCodeImageBase64 = await QRCode.toDataURL(qrCodeData, { width: 90, margin: 2 });
+        const qrCodeData = `ID:${empleado.id}|CI:${empleado.cedula}|${empleado.nombre} ${empleado.apellido}`;
+        const qrCodeImageBase64 = await QRCode.toDataURL(qrCodeData, { width: 70, margin: 1 });
 
         const carnetBackgroundPath = getPublicPath('images/carnet_template_vertical.png');
         const companyLogoPath = getPublicPath('images/logo.jpg');
@@ -71,47 +71,48 @@ const downloadCarnet = async (req, res) => {
            .text('REPÚBLICA BOLIVARIANA DE VENEZUELA', 0, 10, { align: 'center', width: 153 });
 
         if (fs.existsSync(companyLogoPath)) {
-            doc.image(companyLogoPath, (153 - 50) / 2, 20, { width: 50 });
+            doc.image(companyLogoPath, (153 - 60) / 2, 25, { width: 60 }); 
         } else {
             console.warn('Advertencia: El logo de la empresa no se encontró en la ruta:', companyLogoPath);
-            doc.fontSize(8).fillColor('gray').text('Logo', (153 - 40) / 2, 25, { width: 40, align: 'center' });
+            doc.fontSize(8).fillColor('gray').text('Logo', (153 - 40) / 2, 30, { width: 40, align: 'center' });
         }
 
         doc.fillColor('#c0392b')
-           .fontSize(16)
+           .fontSize(14)
            .font('Helvetica-Bold')
            .text('ALIMENTOS DEL ALBA', 0, 80, { align: 'center', width: 153 });
 
         if (empleado.foto_perfil) {
             const fotoPerfilFullPath = getPublicPath(empleado.foto_perfil);
             if (fs.existsSync(fotoPerfilFullPath)) {
-                doc.image(fotoPerfilFullPath, (153 - 70) / 2, 100, { width: 70, height: 70, fit: [70, 70], align: 'center', valign: 'center' });
+                doc.image(fotoPerfilFullPath, (153 - 70) / 2, 105, { width: 70, height: 70, fit: [70, 70], align: 'center', valign: 'center' });
             } else {
                 console.warn('Advertencia: La foto de perfil del empleado no se encontró en la ruta:', fotoPerfilFullPath);
-                doc.rect((153 - 70) / 2, 100, 70, 70).fill('#cccccc');
-                doc.fillColor('black').fontSize(8).text('Sin Foto', (153 - 70) / 2, 125, { width: 70, align: 'center' });
+                doc.rect((153 - 70) / 2, 105, 70, 70).fill('#cccccc');
+                doc.fillColor('black').fontSize(8).text('Sin Foto', (153 - 70) / 2, 130, { width: 70, align: 'center' });
             }
         } else {
-            doc.rect((153 - 70) / 2, 100, 70, 70).fill('#cccccc');
-            doc.fillColor('black').fontSize(8).text('Sin Foto', (153 - 70) / 2, 125, { width: 70, align: 'center' });
+            doc.rect((153 - 70) / 2, 105, 70, 70).fill('#cccccc');
+            doc.fillColor('black').fontSize(8).text('Sin Foto', (153 - 70) / 2, 130, { width: 70, align: 'center' });
         }
 
-        doc.image(qrCodeImageBase64, 10, 100);
+        doc.image(qrCodeImageBase64, (153 - 70) / 2, 185);
 
-        // 7. Detalles del empleado
         doc.fillColor('#000000')
-           .fontSize(9)
+           .fontSize(10)
            .font('Helvetica-Bold')
-           .text(`${empleado.nombre.toUpperCase()} ${empleado.apellido.toUpperCase()}`, 0, 180, { align: 'center', width: 153 })
+           .text(`${empleado.nombre.toUpperCase()} ${empleado.apellido.toUpperCase()}`, 0, 215, { align: 'center', width: 153 })
            .font('Helvetica')
-           .text(`${empleado.cedula}`, 0, 190, { align: 'center', width: 153 });
+           .fontSize(9) 
+           .text(`${empleado.cedula}`, 0, 225, { align: 'center', width: 153 });
 
         doc.fontSize(8)
-           .text(`${empleado.cargo.toUpperCase()}`, 0, 205, { align: 'center', width: 153 });
+           .text(`${empleado.cargo.toUpperCase()}`, 0, 235, { align: 'center', width: 153 });
+
         doc.fillColor('#555')
            .fontSize(7)
-           .text('Alimentos del Alba C.A.', 0, 225, { align: 'center', width: 153 })
-           .text('¡Nutriendo a Venezuela!', 0, 235, { align: 'center', width: 153 });
+           .text('Alimentos del Alba C.A.', 0, 250, { align: 'center', width: 153 })
+           .text('¡Nutriendo a Venezuela!', 0, 260, { align: 'center', width: 153 });
 
         doc.end();
 
