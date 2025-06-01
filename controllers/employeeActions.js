@@ -59,20 +59,23 @@ const downloadQrPdf = async (req, res) => {
 
         doc.pipe(res);
 
-        doc.font('Helvetica-Bold') 
+        doc.font('Helvetica-Bold')
            .fontSize(24)
            .text('Código QR de Asistencia', { align: 'center' })
            .moveDown(0.7);
+
 
         doc.font('Helvetica')
            .fontSize(16)
            .text('Alimentos del Alba C.A.', { align: 'center' })
            .moveDown(0.5);
 
+
         doc.fontSize(12)
            .text(`Empleado: ${empleado.nombre} ${empleado.apellido}`, { align: 'center' })
            .text(`Cédula de Identidad: ${empleado.cedula}`, { align: 'center' })
            .moveDown(1.5);
+
 
         const currentDate = new Date().toLocaleDateString('es-VE', {
             year: 'numeric',
@@ -81,24 +84,29 @@ const downloadQrPdf = async (req, res) => {
         });
         doc.fontSize(10)
            .text(`Fecha de emisión: ${currentDate}`, { align: 'center' })
-           .moveDown(1);
+           .moveDown(2);
+
 
         const base64Image = qrCodeDataURL.split(';base64,').pop();
         const imageBuffer = Buffer.from(base64Image, 'base64');
 
+  
         const imgSize = 200;
-        const x = (doc.page.width - imgSize) / 2; 
+        const x = (doc.page.width - imgSize) / 2;
         const y = doc.y;
+
 
         doc.image(imageBuffer, x, y, { width: imgSize, height: imgSize });
 
-        doc.moveDown(2);
+        doc.moveDown(2.5);
+
 
         doc.fontSize(12)
            .text('Presente este código para registrar su asistencia en la entrada y salida de la jornada laboral.', { align: 'center' })
            .moveDown(0.5);
         doc.text('Este código es personal e intransferible.', { align: 'center' });
 
+ 
         doc.end();
 
     } catch (error) {
