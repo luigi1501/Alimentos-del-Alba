@@ -137,7 +137,7 @@ router.get('/logout', (req, res, next) => {
 
 router.post('/empleados/perfil/upload-foto', isAuthenticated, upload.single('profilePic'), employeeActions.uploadProfilePhoto);
 
-router.get('/descargar-qr-imagen', isAuthenticated, employeeActions.downloadQrImage);
+router.get('/descargar-qr-pdf', isAuthenticated, employeeActions.downloadQrPdf);
 
 
 router.get('/panel-empleado', isAuthenticated, async (req, res) => {
@@ -146,7 +146,7 @@ router.get('/panel-empleado', isAuthenticated, async (req, res) => {
         let qrCodeUrl = null;
 
         if (empleado && empleado.qr_code) {
-            qrCodeUrl = await QRCode.toDataURL(empleado.qr_code);
+            qrCodeUrl = await QRCode.toDataURL(`ID:${empleado.id}|CI:${empleado.cedula}`);
         }
 
         console.log('DEBUG: Data being passed to panel-empleado.ejs:', JSON.stringify(empleado, null, 2));
