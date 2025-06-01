@@ -11,7 +11,7 @@ let querys = {
     obtenerEmpleadoPorCedula: 'SELECT id FROM empleados WHERE cedula = ?',
     getEmpleadoPorId: 'SELECT id, usuario, password_hash, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code, foto_perfil FROM empleados WHERE id = ?',
     getQrCodePorId: 'SELECT qr_code FROM empleados WHERE id = ?',
-    getEmpleadoPorQrCode: 'SELECT id, nombre, apellido, foto_perfil FROM empleados WHERE qr_code = ?',
+    getEmpleadoParaAsistenciaPorCedula: 'SELECT id, nombre, apellido, foto_perfil FROM empleados WHERE cedula = ?',
     insertarAsistenciaEntrada: 'INSERT INTO historial_asistencia (empleado_id, fecha, hora_entrada) VALUES (?, ?, ?)',
     actualizarAsistenciaSalida: 'UPDATE historial_asistencia SET hora_salida = ? WHERE empleado_id = ? AND fecha = ? AND hora_salida IS NULL',
     getEntradaPendiente: 'SELECT id_asistencia FROM historial_asistencia WHERE empleado_id = ? AND fecha = ? AND hora_salida IS NULL',
@@ -132,9 +132,26 @@ module.exports = {
 
     async getEmpleadoPorQrCode(qrCode) {
         return new Promise((resolve, reject) => {
-            db.get(querys.getEmpleadoPorQrCode, [qrCode], (err, row) => {
+            console.log(`DEBUG DB: [getEmpleadoPorQrCode] QR Code recibido: ${qrCode}`);
+
+            const ciMatch = qrCode.match(/CI:(\d+)/);
+
+            if (!ciMatch || !ciMatch[1]) {
+                console.warn('DEBUG DB: [getEmpleadoPorQrCode] Formato de QR Code inválido o CI no encontrado:', qrCode);
+                return resolve(null);
+            }
+            const cedula = ciMatch[1];
+            console.log(`DEBUG DB: [getEmpleadoPorQrCode] Cédula extraída: ${cedula}`);
+
+            db.get(querys.getEmpleadoParaAsistenciaPorCedula, [cedula], (err, row) => {
                 if (err) {
+                    console.error('DEBUG DB: [getEmpleadoPorQrCode] Error al buscar empleado por cédula:', err.message);
                     return reject(err);
+                }
+                if (row) {
+                    console.log('DEBUG DB: [getEmpleadoPorQrCode] Empleado ENCONTRADO por cédula:', row);
+                } else {
+                    console.log(`DEBUG DB: [getEmpleadoPorQrCode] No se encontró empleado con cédula: ${cedula}`);
                 }
                 resolve(row);
             });
