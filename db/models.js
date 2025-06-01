@@ -1,6 +1,7 @@
 const db = require('./connection');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const { DateTime } = require('luxon');
 
 let querys = {
     getempleados: 'SELECT id, usuario, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code, foto_perfil FROM empleados',
@@ -203,12 +204,13 @@ module.exports = {
 
     async registrarEntrada(empleadoId) {
         return new Promise((resolve, reject) => {
-            const now = new Date();
-            const fechaHoy = now.toISOString().split('T')[0];
-            const horaActual = now.toISOString();
+            const now = DateTime.now().setZone('America/Caracas');
+            const fechaHoy = now.toISODate();
+            const horaActual = now.toISO();
 
             db.get(querys.getEntradaPendiente, [empleadoId, fechaHoy], (err, row) => {
                 if (err) {
+                    console.error('Error al verificar entrada pendiente:', err.message);
                     return reject(err);
                 }
                 if (row) {
@@ -220,6 +222,7 @@ module.exports = {
                     [empleadoId, fechaHoy, horaActual],
                     function(err) {
                         if (err) {
+                            console.error('Error al insertar asistencia de entrada:', err.message);
                             return reject(err);
                         }
                         resolve(this.lastID);
@@ -231,15 +234,16 @@ module.exports = {
 
     async registrarSalida(empleadoId) {
         return new Promise((resolve, reject) => {
-            const now = new Date();
-            const fechaHoy = now.toISOString().split('T')[0];
-            const horaActual = now.toISOString();
+            const now = DateTime.now().setZone('America/Caracas');
+            const fechaHoy = now.toISODate();
+            const horaActual = now.toISO();
 
             db.run(
                 querys.actualizarAsistenciaSalida,
                 [horaActual, empleadoId, fechaHoy],
                 function(err) {
                     if (err) {
+                        console.error('Error al actualizar asistencia de salida:', err.message);
                         return reject(err);
                     }
                     if (this.changes === 0) {
