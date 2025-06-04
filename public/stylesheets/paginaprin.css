@@ -207,3 +207,37 @@ footer .social-links a {
         margin-top: 70px;
     }
 }
+
+.content-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.content-section img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+    .content-section {
+        flex-direction: row;
+        text-align: left;
+        justify-content: center;
+    }
+
+    .content-section.image-right img {
+        order: 1;
+        margin-left: 20px;
+    }
+
+    .content-section.image-left img {
+        order: -1;
+        margin-right: 20px;
+    }
+}
