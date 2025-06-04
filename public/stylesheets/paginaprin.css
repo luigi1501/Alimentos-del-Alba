@@ -218,8 +218,9 @@ footer .social-links a {
 }
 
 .content-section img {
-    max-width: 100%;
+    max-width: 150px;
     height: auto;
+    object-fit: cover;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
