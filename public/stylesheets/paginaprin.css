@@ -43,6 +43,17 @@ body {
     white-space: nowrap;
 }
 
+@media (max-width: 480px) {
+    .navbar-brand .brand-text {
+        font-size: 1.2em;
+        white-space: normal;
+    }
+    .main-navbar {
+        padding: 10px 10px;
+    }
+}
+
+
 .hamburger-menu {
     display: block;
     background: transparent;
@@ -190,13 +201,15 @@ footer .social-links a {
         padding: 0;
         box-shadow: none;
         margin-left: auto;
-        gap: 15px;
+        gap: 8px;
     }
 
     .nav-links .nav-button {
         width: auto;
         margin-bottom: 0;
-        padding: 10px 15px;
+        padding: 8px 10px;
+        white-space: nowrap;
+        font-size: 0.95em;
     }
 
     .nav-links .nav-button:last-child {
