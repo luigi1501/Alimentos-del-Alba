@@ -201,15 +201,15 @@ footer .social-links a {
         padding: 0;
         box-shadow: none;
         margin-left: auto;
-        gap: 5px;
+        gap: 8px;
     }
 
     .nav-links .nav-button {
         width: auto;
         margin-bottom: 0;
-        padding: 6px 8px;
+        padding: 8px 10px;
         white-space: nowrap;
-        font-size: 0.9em;
+        font-size: 0.95em;
     }
 
     .nav-links .nav-button:last-child {
