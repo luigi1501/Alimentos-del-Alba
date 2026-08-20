@@ -6,14 +6,19 @@ const morgan = require('morgan');
 const multer = require('multer');
 const SQLiteStore = require('better-sqlite3-session-store')(session);
 const Database = require('better-sqlite3');
-const sessionDb = new Database(path.join(__dirname, 'db', 'sessions.db'));
+
+// ── Configurar ruta de base de datos para Vercel ──────────────
+const dbPath = process.env.NODE_ENV === 'production' 
+    ? '/tmp/sessions.db' 
+    : path.join(__dirname, 'db', 'sessions.db');
+const sessionDb = new Database(dbPath);
 
 dotenv.config({ override: true });
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// ── Confianza en proxy (para Render/Railway/etc.) ──────────────
+// ── Confianza en proxy (para Render/Railway/Vercel/etc.) ──────
 app.set('trust proxy', 1);
 
 // ── Logging HTTP ───────────────────────────────────────────────
@@ -92,8 +97,13 @@ app.use((err, req, res, next) => {
     res.status(500).send('¡Algo salió mal en el servidor!');
 });
 
-// ── Iniciar servidor ───────────────────────────────────────────
-app.listen(port, () => {
-    console.log(`Servidor Express escuchando en http://localhost:${port}`);
-    console.log('Presiona CTRL+C para detener el servidor');
-});
+// ── Exportar para Vercel ──────────────────────────────────────
+module.exports = app;
+
+// ── Iniciar servidor (solo en desarrollo local) ──────────────
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => {
+        console.log(`Servidor Express escuchando en http://localhost:${port}`);
+        console.log('Presiona CTRL+C para detener el servidor');
+    });
+}
