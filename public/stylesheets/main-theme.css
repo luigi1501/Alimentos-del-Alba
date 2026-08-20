@@ -1,0 +1,394 @@
+/* ==========================================================================
+   ALIMENTOS DEL ALBA — DESIGN SYSTEM & MAIN THEME (2026)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Brand Palette */
+  --primary: #F59E0B;
+  --primary-hover: #D97706;
+  --primary-light: #FEF3C7;
+  --primary-dark: #B45309;
+
+  --emerald: #10B981;
+  --emerald-hover: #059669;
+  --emerald-light: #D1FAE5;
+
+  --slate-900: #0F172A;
+  --slate-800: #1E293B;
+  --slate-700: #334155;
+  --slate-600: #475569;
+  --slate-500: #64748B;
+  --slate-400: #94A3B8;
+  --slate-200: #E2E8F0;
+  --slate-100: #F1F5F9;
+  --slate-50:  #F8FAFC;
+
+  /* Accent & Feedback */
+  --danger: #EF4444;
+  --danger-light: #FEE2E2;
+  --info: #06B6D4;
+  --info-light: #CFFAFE;
+  --warning: #F59E0B;
+
+  /* Glassmorphism & Surface */
+  --bg-gradient: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+  --bg-light-gradient: linear-gradient(135deg, #F8FAFC 0%, #EDF2F7 100%);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-dark-bg: rgba(15, 23, 42, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --card-border: rgba(226, 232, 240, 0.8);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 15px -1px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 20px 30px -10px rgba(15, 23, 42, 0.12);
+  --shadow-glow-amber: 0 8px 25px rgba(245, 158, 11, 0.35);
+  --shadow-glow-emerald: 0 8px 25px rgba(16, 185, 129, 0.35);
+
+  /* Typography */
+  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: all 0.15s ease;
+  --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Base resets & typography */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--slate-800);
+  background: var(--bg-light-gradient);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--slate-900);
+  letter-spacing: -0.02em;
+}
+
+/* Glass Header / Navbar */
+.alba-navbar {
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.85rem 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.alba-navbar .navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #FFFFFF !important;
+  text-decoration: none;
+}
+
+.alba-navbar .brand-logo {
+  height: 42px;
+  width: 42px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+}
+
+.alba-navbar .nav-link {
+  color: var(--slate-200) !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+.alba-navbar .nav-link:hover,
+.alba-navbar .nav-link.active {
+  color: var(--primary) !important;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Modern Card Containers */
+.alba-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-normal);
+  overflow: hidden;
+}
+
+.alba-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.alba-card-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* Modern Buttons */
+.btn-alba-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  color: #FFFFFF !important;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glow-amber);
+  transition: var(--transition-bounce);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-alba-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.5);
+  color: #FFFFFF;
+}
+
+.btn-alba-secondary {
+  background: var(--slate-100);
+  color: var(--slate-800) !important;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  border: 1px solid var(--slate-200);
+  padding: 0.7rem 1.5rem;
+  border-radius: var(--radius-md);
+  transition: var(--transition-normal);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-alba-secondary:hover {
+  background: var(--slate-200);
+  color: var(--slate-900);
+  transform: translateY(-2px);
+}
+
+.btn-alba-emerald {
+  background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-hover) 100%);
+  color: #FFFFFF !important;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glow-emerald);
+  transition: var(--transition-bounce);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-alba-emerald:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.5);
+  color: #FFFFFF;
+}
+
+.btn-alba-danger {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  color: #FFFFFF !important;
+  font-weight: 600;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-normal);
+  cursor: pointer;
+}
+
+.btn-alba-danger:hover {
+  background: #B91C1C;
+  transform: translateY(-2px);
+}
+
+/* Modern Form Elements */
+.alba-input {
+  width: 100%;
+  padding: 0.8rem 1.1rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--slate-200);
+  background: #FFFFFF;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--slate-900);
+  transition: var(--transition-normal);
+}
+
+.alba-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+}
+
+.alba-label {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--slate-700);
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+/* Status Badges */
+.badge-alba {
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.badge-alba-emerald {
+  background: var(--emerald-light);
+  color: #047857;
+}
+
+.badge-alba-amber {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.badge-alba-slate {
+  background: var(--slate-100);
+  color: var(--slate-700);
+}
+
+/* Tables */
+.alba-table-container {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: #FFFFFF;
+}
+
+.alba-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.alba-table th {
+  background: var(--slate-900);
+  color: #FFFFFF;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1rem 1.25rem;
+  text-align: left;
+}
+
+.alba-table td {
+  padding: 1rem 1.25rem;
+  color: var(--slate-700);
+  border-bottom: 1px solid var(--slate-100);
+  font-size: 0.92rem;
+  vertical-align: middle;
+}
+
+.alba-table tbody tr {
+  transition: var(--transition-fast);
+}
+
+.alba-table tbody tr:hover {
+  background: var(--slate-50);
+}
+
+/* Page Header Hero Banner */
+.alba-hero-mini {
+  background: linear-gradient(135deg, var(--slate-900) 0%, var(--slate-800) 100%);
+  color: #FFFFFF;
+  padding: 2.5rem 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.alba-hero-mini::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.alba-hero-mini h1 {
+  color: #FFFFFF;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.alba-hero-mini p {
+  color: var(--slate-400);
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+  .alba-hero-mini {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .alba-hero-mini h1 {
+    font-size: 1.5rem;
+  }
+
+  .btn-alba-primary, .btn-alba-secondary, .btn-alba-emerald {
+    width: 100%;
+  }
+}

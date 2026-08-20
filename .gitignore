@@ -1,0 +1,28 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Archivos de entorno y credenciales (¡NUNCA SUBIR A GIT!)
+.env
+.env.local
+*.env
+
+# Base de datos SQLite y sesiones
+db/*.sqlite
+db/*.db
+db/database.sqlite
+db/sessions.db
+*.sqlite
+*.db
+
+# Archivos subidos por usuarios
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Logs y temporales
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store
+Thumbs.db

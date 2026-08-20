@@ -1,27 +1,38 @@
 const express = require('express');
 const session = require('express-session');
-const bodyParser = require('body-parser');
 const path = require('path');
 const dotenv = require('dotenv');
+const morgan = require('morgan');
 const multer = require('multer');
-const SQLiteStore = require('connect-sqlite3')(session);
+const SQLiteStore = require('better-sqlite3-session-store')(session);
+const Database = require('better-sqlite3');
+const sessionDb = new Database(path.join(__dirname, 'db', 'sessions.db'));
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+// ── Confianza en proxy (para Render/Railway/etc.) ──────────────
 app.set('trust proxy', 1);
 
-const db = require('./db/models');
+// ── Logging HTTP ───────────────────────────────────────────────
+if (process.env.NODE_ENV !== 'test') {
+    app.use(morgan('dev'));
+}
 
+// ── Inicializar modelos / conexión DB ──────────────────────────
+require('./db/models');
+
+// ── Sesiones ───────────────────────────────────────────────────
 app.use(session({
     store: new SQLiteStore({
-        db: 'sessions.db',
-        table: 'sessions',
-        dir: './db'
+        client: sessionDb,
+        expired: {
+            clear: true,
+            intervalMs: 15 * 60 * 1000
+        }
     }),
-
     secret: process.env.SESSION_SECRET || 'una_cadena_secreta_de_respaldo',
     resave: false,
     saveUninitialized: false,
@@ -32,6 +43,7 @@ app.use(session({
     }
 }));
 
+// ── Variables locales de sesión ────────────────────────────────
 app.use((req, res, next) => {
     res.locals.userId = req.session.userId;
     res.locals.nombreEmpleado = req.session.nombreEmpleado;
@@ -41,26 +53,33 @@ app.use((req, res, next) => {
     next();
 });
 
+// ── Motor de vistas ────────────────────────────────────────────
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+// ── Archivos estáticos ─────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+// ── Parseo de body (Express nativo — body-parser no es necesario) ──
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
+// ── Rutas ──────────────────────────────────────────────────────
 const authRouter = require('./routes/auth');
 const indexRouter = require('./routes/index');
 app.use('/auth', authRouter);
 app.use('/', indexRouter);
-app.use((req, res, next) => {
-    res.status(404).send("Lo siento, no puedo encontrar eso!");
+
+// ── 404 ────────────────────────────────────────────────────────
+app.use((req, res) => {
+    res.status(404).send('Lo siento, no puedo encontrar eso!');
 });
 
+// ── Manejo de errores ──────────────────────────────────────────
 app.use((err, req, res, next) => {
     console.error(err.stack);
+
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
             req.session.message = { type: 'danger', text: 'El archivo es demasiado grande (máximo 5MB).' };
@@ -69,9 +88,11 @@ app.use((err, req, res, next) => {
         }
         return res.redirect('/auth/panel-empleado');
     }
+
     res.status(500).send('¡Algo salió mal en el servidor!');
 });
 
+// ── Iniciar servidor ───────────────────────────────────────────
 app.listen(port, () => {
     console.log(`Servidor Express escuchando en http://localhost:${port}`);
     console.log('Presiona CTRL+C para detener el servidor');

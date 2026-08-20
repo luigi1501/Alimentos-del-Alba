@@ -1,139 +1,186 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Alimentos del Alba</title>
-    <link rel="stylesheet" href="../stylesheets/paginaprin.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    />
-    <link rel="shortcut icon" href="../images/logo.jpg" type="image/x-icon" />
-  </head>
-  <body>
-    <header class="main-navbar">
-      <div class="navbar-brand">
-        <img
-          src="../images/logo2.jpg"
-          alt="Logo de Alimentos del Alba"
-          class="logo"
-        />
-        <span class="brand-text">Alimentos del Alba</span>
-      </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alimentos del Alba C.A. — Calidad y Tradición</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/stylesheets/main-theme.css">
+    <link rel="shortcut icon" href="/images/logo2.jpg" type="image/x-icon">
+    <style>
+        .hero-banner {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+            color: #FFFFFF;
+            padding: 5rem 1.5rem;
+            border-radius: 0 0 30px 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0) 70%);
+            border-radius: 50%;
+        }
+        .feature-card {
+            background: #FFFFFF;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--card-border);
+            padding: 2.5rem 2rem;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition-normal);
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2.5rem;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 50px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+        .footer-alba {
+            background: var(--slate-900);
+            color: var(--slate-400);
+            padding: 3rem 0 1.5rem 0;
+            border-top: 1px solid var(--slate-800);
+        }
+    </style>
+</head>
+<body>
 
-      <button class="hamburger-menu" aria-label="Toggle navigation">
-        <span class="line"></span>
-        <span class="line"></span>
-        <span class="line"></span>
-      </button>
+    <!-- Main Navigation Bar -->
+    <nav class="navbar navbar-expand-lg alba-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <img src="/images/logo2.jpg" alt="Alimentos del Alba Logo" class="brand-logo">
+                <span>Alimentos del Alba</span>
+            </a>
+            
+            <button class="navbar-toggler text-white border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <i class="bi bi-list fs-2 text-warning"></i>
+            </button>
 
-      <nav class="nav-links">
-        <a href="/login" class="nav-button">Iniciar Sesión Admin</a>
-        <a href="/auth/login-empleado" class="nav-button"
-          >Iniciar Sesión Empleado</a
-        >
-        <a href="#about" class="nav-button">Quiénes Somos</a>
-        <a href="#mission" class="nav-button">Misión</a>
-        <a href="#vision" class="nav-button">Visión</a>
-      </nav>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                    <li class="nav-item"><a class="nav-link active" href="#about">Quiénes Somos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#mission">Misión</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#vision">Visión</a></li>
+                </ul>
+                
+                <div class="d-flex flex-column flex-lg-row gap-2 mt-3 mt-lg-0">
+                    <a href="/auth/login-empleado" class="btn btn-alba-emerald">
+                        <i class="bi bi-person-badge me-1"></i> Portal Empleado
+                    </a>
+                    <a href="/login" class="btn btn-alba-primary">
+                        <i class="bi bi-shield-lock me-1"></i> Acceso Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Banner -->
+    <header class="hero-banner text-center mb-5">
+        <div class="container py-4" style="max-width: 800px;">
+            <span class="badge badge-alba-amber px-3 py-2 fs-6 mb-3">
+                <i class="bi bi-sun-fill me-1"></i> Nutriendo a Venezuela
+            </span>
+            <h1 class="display-4 fw-bold text-white mb-3">Bienvenido a Nuestra Plataforma</h1>
+            <p class="lead text-slate-200 mb-4 fs-5">
+                En el corazón de la tierra, donde los primeros rayos del sol acarician los campos, nace Alimentos del Alba. Dedicados a ofrecer productos alimenticios de la más alta calidad.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="#about" class="btn btn-alba-primary btn-lg">Conócenos <i class="bi bi-arrow-down ms-1"></i></a>
+                <a href="/auth/login-empleado" class="btn btn-alba-secondary btn-lg">Acceso Personal <i class="bi bi-box-arrow-in-right ms-1"></i></a>
+            </div>
+        </div>
     </header>
 
-    <main>
-      <section class="banner">
-        <h2>Bienvenido a Nuestra Plataforma</h2>
-        <p>
-          En el corazón de la tierra, donde los primeros rayos del sol acarician
-          los campos, nace Alimentos del Alba. Somos una empresa dedicada a
-          cultivar y ofrecer productos alimenticios de la más alta calidad,
-          inspirados en la frescura y vitalidad del amanecer.
-        </p>
-      </section>
+    <!-- Main Content -->
+    <main class="container my-5">
 
-      <section id="about" class="content-section hidden image-left">
-        <div>
-          <h2>Quiénes Somos</h2>
-          <p>
-            Alimentos del Alba es una corporación venezolana de alimentos y
-            bebidas con una profunda tradición de calidad y compromiso con el
-            bienestar de las familias del país. Nacimos con la visión de nutrir
-            a Venezuela, ofreciendo productos esenciales y placenteros que
-            forman parte de la vida cotidiana. Somos una empresa que valora la
-            tierra, el trabajo de nuestra gente y la confianza de nuestros
-            consumidores. Nos esforzamos por ser un motor de desarrollo,
-            generando oportunidades y contribuyendo al crecimiento sostenible de
-            las comunidades donde operamos.
-          </p>
-        </div>
-        <img src="../images/imagen1.jpg" alt="Imagen de Quiénes Somos" />
-      </section>
+        <!-- Quiénes Somos -->
+        <section id="about" class="mb-5 pt-3">
+            <div class="feature-card">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-7">
+                        <h2 class="h2 section-title">Quiénes Somos</h2>
+                        <p class="text-secondary leading-relaxed">
+                            <strong>Alimentos del Alba C.A.</strong> es una corporación venezolana de alimentos y bebidas con una profunda tradición de calidad y compromiso con el bienestar de las familias del país.
+                        </p>
+                        <p class="text-secondary">
+                            Nacimos con la visión de nutrir a Venezuela, ofreciendo productos esenciales y placenteros que forman parte de la vida cotidiana. Valoramos la tierra, el trabajo de nuestra gente y la confianza de nuestros consumidores.
+                        </p>
+                    </div>
+                    <div class="col-lg-5 text-center">
+                        <img src="/images/imagen1.jpg" alt="Quiénes Somos" class="img-fluid rounded-4 shadow-md border" style="max-height: 280px; object-fit: cover;">
+                    </div>
+                </div>
+            </div>
+        </section>
 
-      <section id="mission" class="content-section hidden image-right">
-        <div>
-          <h2>Nuestra Misión</h2>
-          <p>
-            Nutrir a Venezuela con alimentos y bebidas de alta calidad,
-            accesibles y confiables, que enriquezcan la vida diaria de las
-            familias y contribuyan al desarrollo sostenible del país.
-          </p>
-        </div>
-        <img src="../images/imagen3.png" alt="Imagen de Misión" />
-      </section>
+        <!-- Misión & Visión -->
+        <div class="row g-4 mb-5">
+            
+            <div class="col-lg-6" id="mission">
+                <div class="feature-card h-100">
+                    <div class="p-3 bg-amber-light text-warning rounded-3 d-inline-block fs-3 mb-3" style="background: var(--primary-light);">
+                        <i class="bi bi-compass-fill text-warning"></i>
+                    </div>
+                    <h2 class="h3 section-title">Nuestra Misión</h2>
+                    <p class="text-secondary">
+                        Nutrir a Venezuela con alimentos y bebidas de alta calidad, accesibles y confiables, que enriquezcan la vida diaria de las familias y contribuyan al desarrollo sostenible del país.
+                    </p>
+                </div>
+            </div>
 
-      <section id="vision" class="content-section hidden image-left">
-        <div>
-          <h2>Nuestra Visión</h2>
-          <p>
-            Ser la empresa líder y referente en el sector de alimentos y bebidas
-            en Venezuela, reconocida por nuestra calidad, innovación, compromiso
-            social y por ser parte integral de la mesa de cada hogar venezolano.
-            Aspiramos a expandir nuestro alcance, llevando el sabor y la calidad
-            de Alimentos del Alba a nuevos mercados, manteniendo siempre nuestra
-            esencia y valores fundamentales
-          </p>
+            <div class="col-lg-6" id="vision">
+                <div class="feature-card h-100">
+                    <div class="p-3 text-emerald rounded-3 d-inline-block fs-3 mb-3" style="background: var(--emerald-light);">
+                        <i class="bi bi-eye-fill text-success"></i>
+                    </div>
+                    <h2 class="h3 section-title">Nuestra Visión</h2>
+                    <p class="text-secondary">
+                        Ser la empresa líder y referente en el sector de alimentos en Venezuela, reconocida por nuestra calidad, innovación y compromiso social en cada hogar venezolano.
+                    </p>
+                </div>
+            </div>
+
         </div>
-        <img src="../images/imagen2.png" alt="Imagen de Visión" />
-      </section>
+
     </main>
 
-    <footer>
-      <p>&copy; 2025 Alimentos del Alba. Todos los derechos reservados.</p>
-      <p>Contacto: soporte@alimentosdelalba.com</p>
-      <div class="social-links">
-        <a href="https://www.facebook.com" target="_blank" title="Facebook"
-          ><i class="fab fa-facebook-f"></i
-        ></a>
-        <a href="https://www.twitter.com" target="_blank" title="Twitter"
-          ><i class="fab fa-twitter"></i
-        ></a>
-        <a href="https://www.instagram.com" target="_blank" title="Instagram"
-          ><i class="fab fa-instagram"></i
-        ></a>
-        <a href="https://www.linkedin.com" target="_blank" title="LinkedIn"
-          ><i class="fab fa-linkedin-in"></i
-        ></a>
-      </div>
+    <!-- Footer -->
+    <footer class="footer-alba">
+        <div class="container text-center">
+            <p class="mb-1 text-slate-300">&copy; 2026 Alimentos del Alba C.A. Todos los derechos reservados.</p>
+            <p class="small text-muted mb-3">Contacto: <a href="mailto:soporte@alimentosdelalba.com" class="text-warning text-decoration-none">soporte@alimentosdelalba.com</a></p>
+            <div class="d-flex justify-content-center gap-3 fs-5">
+                <a href="#" class="text-slate-400 hover-primary"><i class="bi bi-facebook"></i></a>
+                <a href="#" class="text-slate-400 hover-primary"><i class="bi bi-twitter-x"></i></a>
+                <a href="#" class="text-slate-400 hover-primary"><i class="bi bi-instagram"></i></a>
+                <a href="#" class="text-slate-400 hover-primary"><i class="bi bi-linkedin"></i></a>
+            </div>
+        </div>
     </footer>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const hamburger = document.querySelector(".hamburger-menu");
-        const navLinks = document.querySelector(".nav-links");
-
-        if (hamburger && navLinks) {
-          hamburger.addEventListener("click", () => {
-            navLinks.classList.toggle("active");
-            hamburger.classList.toggle("open");
-          });
-
-          navLinks.querySelectorAll("a").forEach((link) => {
-            link.addEventListener("click", () => {
-              navLinks.classList.remove("active");
-              hamburger.classList.remove("open");
-            });
-          });
-        }
-      });
-    </script>
-  </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

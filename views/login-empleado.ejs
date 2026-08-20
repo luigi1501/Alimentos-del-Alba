@@ -1,68 +1,110 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Iniciar Sesión</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-      crossorigin="anonymous"
-    />
-    <link rel="stylesheet" href="../stylesheets/login-empleado.css" />
-    <link rel="shortcut icon" href="../images/logo2.jpg" type="image/x-icon" />
-  </head>
-  <body>
-    <div class="container login-container">
-      <h2>Iniciar Sesión</h2>
-      <% if (error === 'incorrectPassword') { %>
-      <div class="alert alert-danger">
-        Contraseña incorrecta. Por favor, inténtalo de nuevo.
-      </div>
-      <% } else if (error === 'employeeNotFound') { %>
-      <div class="alert alert-danger">
-        Usuario no encontrado. Por favor, verifica tu usuario.
-      </div>
-      <% } else if (error === 'loginFailed') { %>
-      <div class="alert alert-danger">
-        Error al iniciar sesión. Por favor, inténtalo más tarde.
-      </div>
-      <% } %>
-      <form action="/auth/login-empleado" method="POST">
-        <div class="mb-3">
-          <label for="usuario" class="form-label">Usuario:</label>
-          <input
-            type="text"
-            class="form-control"
-            id="usuario"
-            name="usuario"
-            required
-          />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Empleados — Alimentos del Alba</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/stylesheets/main-theme.css">
+    <link rel="shortcut icon" href="/images/logo2.jpg" type="image/x-icon">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .employee-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            max-width: 440px;
+            width: 100%;
+            padding: 2.5rem;
+        }
+        .brand-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .brand-header img {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            object-fit: cover;
+            border: 3px solid var(--emerald);
+            box-shadow: var(--shadow-glow-emerald);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="employee-card">
+        <div class="brand-header">
+            <img src="/images/logo2.jpg" alt="Alimentos del Alba Logo">
+            <h2 class="h3 fw-bold text-dark mb-1">Portal del Empleado</h2>
+            <p class="text-muted small">Ingresa con tus credenciales asignadas</p>
         </div>
-        <div class="mb-3">
-          <label for="password" class="form-label">Contraseña:</label>
-          <input
-            type="password"
-            class="form-control"
-            id="password"
-            name="password"
-            required
-          />
-        </div>
-        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-        <div class="mt-3">
-          <a href="/auth/registro-empleado" class="btn btn-secondary"
-            >Registrarse</a
-          >
-          <a href="/" class="btn btn-secondary">Volver</a>
-        </div>
-      </form>
+
+        <% if (locals.error === 'incorrectPassword') { %>
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <div>Contraseña incorrecta. Por favor, verifica tus datos.</div>
+            </div>
+        <% } else if (locals.error === 'employeeNotFound') { %>
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-person-x-fill"></i>
+                <div>Usuario no registrado en el sistema.</div>
+            </div>
+        <% } else if (locals.error === 'tooManyAttempts') { %>
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-shield-exclamation"></i>
+                <div>Demasiados intentos fallidos. Intenta nuevamente en 15 minutos.</div>
+            </div>
+        <% } else if (locals.error === 'loginFailed') { %>
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-x-octagon-fill"></i>
+                <div>Error del servidor al iniciar sesión. Inténtalo más tarde.</div>
+            </div>
+        <% } %>
+
+        <form action="/auth/login-empleado" method="POST">
+            <div class="mb-3">
+                <label for="usuario" class="alba-label">Nombre de Usuario</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-person-badge text-muted"></i></span>
+                    <input type="text" id="usuario" name="usuario" class="form-control border-start-0 ps-0" placeholder="Ej. jperez" required autofocus>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="alba-label">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-key text-muted"></i></span>
+                    <input type="password" id="password" name="password" class="form-control border-start-0 ps-0" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-alba-emerald w-100 py-2 mb-3">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión Empleado
+            </button>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                <a href="/auth/registro-empleado" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-person-plus me-1"></i> Registrarse
+                </a>
+                <a href="/" class="text-decoration-none text-muted small">
+                    <i class="bi bi-house me-1"></i> Inicio
+                </a>
+            </div>
+        </form>
     </div>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-      crossorigin="anonymous"
-    ></script>
-  </body>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

@@ -1,23 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link rel="stylesheet" href="../stylesheets/login.css">
-    <link rel="shortcut icon" href="../images/logo2.jpg" type="image/x-icon">
-    <title>Login Alimentso del Alba</title>
+    <title>Acceso Administrativo — Alimentos del Alba</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/stylesheets/main-theme.css">
+    <link rel="shortcut icon" href="/images/logo2.jpg" type="image/x-icon">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            max-width: 440px;
+            width: 100%;
+            padding: 2.5rem;
+        }
+        .brand-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .brand-header img {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            box-shadow: var(--shadow-glow-amber);
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
+<body>
 
-<form action="/login" method="post">
-    <h3>Inicio</h3>
-    <label for="username">Nombre de Usuario</label>
-    <input type="text" placeholder="Usuario" name="user" value="" required>
-    <label for="password" required>Contraseña</label>
-    <input type="password" placeholder="Contraseña" name="password" value="" required>
-    <button type="submit" value="Login" required>Iniciar Sesión</button>
-  </form>
+    <div class="login-card">
+        <div class="brand-header">
+            <img src="/images/logo2.jpg" alt="Alimentos del Alba Logo">
+            <h2 class="h3 fw-bold text-dark mb-1">Panel de Control Admin</h2>
+            <p class="text-muted small">Alimentos del Alba C.A.</p>
+        </div>
 
+        <% if (locals.error === 'incorrectCredentials') { %>
+            <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                <div>Credenciales incorrectas. Verifica tu usuario o contraseña.</div>
+            </div>
+        <% } else if (locals.error === 'tooManyAttempts') { %>
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-shield-exclamation flex-shrink-0"></i>
+                <div>Demasiados intentos fallidos. Reintenta en 15 minutos.</div>
+            </div>
+        <% } %>
+
+        <form action="/login" method="POST">
+            <div class="mb-3">
+                <label for="user" class="alba-label">Nombre de Usuario</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                    <input type="text" id="user" name="user" class="form-control border-start-0 ps-0" placeholder="Ej. admin" required autofocus>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="alba-label">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                    <input type="password" id="password" name="password" class="form-control border-start-0 ps-0" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-alba-primary w-100 py-2 mb-3">
+                <i class="bi bi-box-arrow-in-right"></i> Acceder al Sistema
+            </button>
+
+            <div class="text-center mt-3">
+                <a href="/" class="text-decoration-none text-muted small hover-primary">
+                    <i class="bi bi-arrow-left"></i> Volver a la página principal
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,9 +1,10 @@
 const db = require('./connection');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const saltRounds = 10;
-const { DateTime } = require('luxon');
+const { formatHora, fechaHoy, ahoraISO, normalizarFecha } = require('../utils/dateUtils');
 
-let querys = {
+// ── Queries SQL ────────────────────────────────────────────────
+const querys = {
     getempleados: 'SELECT id, usuario, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code, foto_perfil FROM empleados',
     getempleadosID: 'SELECT id, usuario, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code, foto_perfil FROM empleados WHERE id = ?',
     insertempleados: 'INSERT INTO empleados (usuario, password_hash, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -11,6 +12,7 @@ let querys = {
     deleteempleados: 'DELETE FROM empleados WHERE id = ?',
     obtenerEmpleadoPorCedula: 'SELECT id FROM empleados WHERE cedula = ?',
     getEmpleadoPorId: 'SELECT id, usuario, password_hash, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code, foto_perfil FROM empleados WHERE id = ?',
+    getEmpleadoPorUsuario: 'SELECT *, foto_perfil FROM empleados WHERE usuario = ?',
     getQrCodePorId: 'SELECT qr_code FROM empleados WHERE id = ?',
     getEmpleadoParaAsistenciaPorCedula: 'SELECT id, nombre, apellido, foto_perfil FROM empleados WHERE cedula = ?',
     insertarAsistenciaEntrada: 'INSERT INTO historial_asistencia (empleado_id, fecha, hora_entrada) VALUES (?, ?, ?)',
@@ -22,25 +24,31 @@ let querys = {
     getHistorialAsistenciaPorEmpleadoYFecha: 'SELECT ha.id_asistencia, ha.fecha, ha.hora_entrada, ha.hora_salida FROM historial_asistencia ha WHERE ha.empleado_id = ? AND ha.fecha = ? ORDER BY ha.fecha DESC, ha.hora_entrada DESC'
 };
 
+// ── Helper: formatea filas con hora_entrada y hora_salida ──────
+const formatearFilasAsistencia = (rows) =>
+    rows.map(row => ({
+        ...row,
+        hora_entrada: formatHora(row.hora_entrada),
+        hora_salida: formatHora(row.hora_salida)
+    }));
+
+// ─────────────────────────────────────────────────────────────
 module.exports = {
 
     async registrarEmpleado(usuario, password, nombre, apellido, cedula, cargo, departamento, telefono, correo) {
         try {
-            const empleadoExistenteCedula = await new Promise((resolve, reject) => {
+            const empleadoExistente = await new Promise((resolve, reject) => {
                 db.get(querys.obtenerEmpleadoPorCedula, [cedula], (err, row) => {
-                    if (err) {
-                        return reject(err);
-                    }
+                    if (err) return reject(err);
                     resolve(row);
                 });
             });
 
-            if (empleadoExistenteCedula) {
+            if (empleadoExistente) {
                 throw new Error('La cédula ya está registrada.');
             }
 
             const hashedPassword = await bcrypt.hash(password, saltRounds);
-
             const qr_code = `QR-${cedula}-${Date.now()}`;
 
             return new Promise((resolve, reject) => {
@@ -52,23 +60,20 @@ module.exports = {
                             console.error('Error al insertar empleado:', err.message);
                             return reject(err);
                         }
-                        console.log(`Empleado ${nombre} ${apellido} registrado con ID: ${this.lastID}`);
                         resolve(this.lastID);
                     }
                 );
             });
         } catch (error) {
-            console.error("Error en registrarEmpleado:", error.message);
+            console.error('Error en registrarEmpleado:', error.message);
             throw error;
         }
     },
 
     async obtenerEmpleadoPorUsuario(usuario) {
         return new Promise((resolve, reject) => {
-            db.get('SELECT *, foto_perfil FROM empleados WHERE usuario = ?', [usuario], (err, row) => {
-                if (err) {
-                    return reject(err);
-                }
+            db.get(querys.getEmpleadoPorUsuario, [usuario], (err, row) => {
+                if (err) return reject(err);
                 resolve(row);
             });
         });
@@ -78,7 +83,7 @@ module.exports = {
         try {
             return await bcrypt.compare(passwordIngresada, hashedPasswordAlmacenado);
         } catch (error) {
-            console.error("Error al comparar contraseñas:", error);
+            console.error('Error al comparar contraseñas:', error);
             throw error;
         }
     },
@@ -102,20 +107,10 @@ module.exports = {
     },
 
     async getEmpleadoPorId(id) {
-        console.log(`DEBUG DB: [getEmpleadoPorId] Intentando obtener empleado con ID: ${id}`);
         return new Promise((resolve, reject) => {
             db.get(querys.getEmpleadoPorId, [id], (err, row) => {
-                if (err) {
-                    console.error('DEBUG DB: [getEmpleadoPorId] Error al obtener empleado por ID:', err.message);
-                    return reject(err);
-                }
-                if (row) {
-                    console.log('DEBUG DB: [getEmpleadoPorId] Empleado ENCONTRADO:', row);
-                    resolve(row);
-                } else {
-                    console.log(`DEBUG DB: [getEmpleadoPorId] No se encontró empleado con ID: ${id}`);
-                    resolve(null);
-                }
+                if (err) return reject(err);
+                resolve(row || null);
             });
         });
     },
@@ -123,9 +118,7 @@ module.exports = {
     async getQrCodePorId(id) {
         return new Promise((resolve, reject) => {
             db.get(querys.getQrCodePorId, [id], (err, row) => {
-                if (err) {
-                    return reject(err);
-                }
+                if (err) return reject(err);
                 resolve(row ? row.qr_code : null);
             });
         });
@@ -133,28 +126,17 @@ module.exports = {
 
     async getEmpleadoPorQrCode(qrCode) {
         return new Promise((resolve, reject) => {
-            console.log(`DEBUG DB: [getEmpleadoPorQrCode] QR Code recibido: ${qrCode}`);
-
             const ciMatch = qrCode.match(/CI:(\d+)/);
 
             if (!ciMatch || !ciMatch[1]) {
-                console.warn('DEBUG DB: [getEmpleadoPorQrCode] Formato de QR Code inválido o CI no encontrado:', qrCode);
                 return resolve(null);
             }
+
             const cedula = ciMatch[1];
-            console.log(`DEBUG DB: [getEmpleadoPorQrCode] Cédula extraída: ${cedula}`);
 
             db.get(querys.getEmpleadoParaAsistenciaPorCedula, [cedula], (err, row) => {
-                if (err) {
-                    console.error('DEBUG DB: [getEmpleadoPorQrCode] Error al buscar empleado por cédula:', err.message);
-                    return reject(err);
-                }
-                if (row) {
-                    console.log('DEBUG DB: [getEmpleadoPorQrCode] Empleado ENCONTRADO por cédula:', row);
-                } else {
-                    console.log(`DEBUG DB: [getEmpleadoPorQrCode] No se encontró empleado con cédula: ${cedula}`);
-                }
-                resolve(row);
+                if (err) return reject(err);
+                resolve(row || null);
             });
         });
     },
@@ -165,9 +147,7 @@ module.exports = {
                 querys.updateempleados,
                 [usuario, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code, foto_perfil, id],
                 function(err) {
-                    if (err) {
-                        return reject(err);
-                    }
+                    if (err) return reject(err);
                     resolve(this.changes);
                 }
             );
@@ -177,9 +157,7 @@ module.exports = {
     deleteempleados(id) {
         return new Promise((resolve, reject) => {
             db.run(querys.deleteempleados, [id], function(err) {
-                if (err) {
-                    return reject(err);
-                }
+                if (err) return reject(err);
                 resolve(this.changes);
             });
         });
@@ -195,7 +173,6 @@ module.exports = {
                         console.error('Error al actualizar foto de perfil:', err.message);
                         return reject(err);
                     }
-                    console.log(`Foto de perfil actualizada para empleado ID: ${empleadoId}. Cambios: ${this.changes}`);
                     resolve(this.changes);
                 }
             );
@@ -204,22 +181,18 @@ module.exports = {
 
     async registrarEntrada(empleadoId) {
         return new Promise((resolve, reject) => {
-            const now = DateTime.now().setZone('America/Caracas');
-            const fechaHoy = now.toISODate();
-            const horaActual = now.toISO();
+            const hoy = fechaHoy();
+            const ahora = ahoraISO();
 
-            db.get(querys.getEntradaPendiente, [empleadoId, fechaHoy], (err, row) => {
-                if (err) {
-                    console.error('Error al verificar entrada pendiente:', err.message);
-                    return reject(err);
-                }
+            db.get(querys.getEntradaPendiente, [empleadoId, hoy], (err, row) => {
+                if (err) return reject(err);
                 if (row) {
                     return reject(new Error('Ya se registró una entrada para hoy sin salida.'));
                 }
 
                 db.run(
                     querys.insertarAsistenciaEntrada,
-                    [empleadoId, fechaHoy, horaActual],
+                    [empleadoId, hoy, ahora],
                     function(err) {
                         if (err) {
                             console.error('Error al insertar asistencia de entrada:', err.message);
@@ -234,13 +207,12 @@ module.exports = {
 
     async registrarSalida(empleadoId) {
         return new Promise((resolve, reject) => {
-            const now = DateTime.now().setZone('America/Caracas');
-            const fechaHoy = now.toISODate();
-            const horaActual = now.toISO();
+            const hoy = fechaHoy();
+            const ahora = ahoraISO();
 
             db.run(
                 querys.actualizarAsistenciaSalida,
-                [horaActual, empleadoId, fechaHoy],
+                [ahora, empleadoId, hoy],
                 function(err) {
                     if (err) {
                         console.error('Error al actualizar asistencia de salida:', err.message);
@@ -258,17 +230,8 @@ module.exports = {
     async getHistorialAsistencia() {
         return new Promise((resolve, reject) => {
             db.all(querys.getHistorialAsistencia, (err, rows) => {
-                if (err) {
-                    return reject(err);
-                }
-                const formattedRows = rows.map(row => {
-                    return {
-                        ...row,
-                        hora_entrada: row.hora_entrada ? new Date(row.hora_entrada).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null,
-                        hora_salida: row.hora_salida ? new Date(row.hora_salida).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null
-                    };
-                });
-                resolve(formattedRows);
+                if (err) return reject(err);
+                resolve(formatearFilasAsistencia(rows));
             });
         });
     },
@@ -276,59 +239,28 @@ module.exports = {
     async getHistorialAsistenciaPorEmpleado(id_empleado) {
         return new Promise((resolve, reject) => {
             db.all(querys.getHistorialAsistenciaPorEmpleado, [id_empleado], (err, rows) => {
-                if (err) {
-                    return reject(err);
-                }
-                const formattedRows = rows.map(row => {
-                    return {
-                        ...row,
-                        hora_entrada: row.hora_entrada ? new Date(row.hora_entrada).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null,
-                        hora_salida: row.hora_salida ? new Date(row.hora_salida).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null
-                    };
-                });
-                resolve(formattedRows);
+                if (err) return reject(err);
+                resolve(formatearFilasAsistencia(rows));
             });
         });
     },
 
     async getHistorialAsistenciaPorFecha(fecha) {
         return new Promise((resolve, reject) => {
-            const searchDate = new Date(fecha);
-            const formattedSearchDate = `${searchDate.getFullYear()}-${(searchDate.getMonth() + 1).toString().padStart(2, '0')}-${searchDate.getDate().toString().padStart(2, '0')}`;
-            
-            db.all(querys.getHistorialAsistenciaPorFecha, [formattedSearchDate], (err, rows) => {
-                if (err) {
-                    return reject(err);
-                }
-                const formattedRows = rows.map(row => {
-                    return {
-                        ...row,
-                        hora_entrada: row.hora_entrada ? new Date(row.hora_entrada).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null,
-                        hora_salida: row.hora_salida ? new Date(row.hora_salida).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null
-                    };
-                });
-                resolve(formattedRows);
+            const fechaNorm = normalizarFecha(fecha);
+            db.all(querys.getHistorialAsistenciaPorFecha, [fechaNorm], (err, rows) => {
+                if (err) return reject(err);
+                resolve(formatearFilasAsistencia(rows));
             });
         });
     },
 
     async getHistorialAsistenciaPorEmpleadoYFecha(id_empleado, fecha) {
         return new Promise((resolve, reject) => {
-            const searchDate = new Date(fecha);
-            const formattedSearchDate = `${searchDate.getFullYear()}-${(searchDate.getMonth() + 1).toString().padStart(2, '0')}-${searchDate.getDate().toString().padStart(2, '0')}`;
-
-            db.all(querys.getHistorialAsistenciaPorEmpleadoYFecha, [id_empleado, formattedSearchDate], (err, rows) => {
-                if (err) {
-                    return reject(err);
-                }
-                const formattedRows = rows.map(row => {
-                    return {
-                        ...row,
-                        hora_entrada: row.hora_entrada ? new Date(row.hora_entrada).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null,
-                        hora_salida: row.hora_salida ? new Date(row.hora_salida).toLocaleTimeString('es-VE', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) : null
-                    };
-                });
-                resolve(formattedRows);
+            const fechaNorm = normalizarFecha(fecha);
+            db.all(querys.getHistorialAsistenciaPorEmpleadoYFecha, [id_empleado, fechaNorm], (err, rows) => {
+                if (err) return reject(err);
+                resolve(formatearFilasAsistencia(rows));
             });
         });
     }
