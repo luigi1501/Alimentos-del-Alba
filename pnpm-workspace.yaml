@@ -1,6 +1,9 @@
-allowBuilds:
-  '@vscode/sqlite3': set this to true or false
-  bcrypt: set this to true or false
-  better-sqlite3: set this to true or false
-  esbuild: false
-  sqlite3: set this to true or false
+packages:
+  - '.'
+
+onlyBuiltDependencies:
+  - '@vscode/sqlite3'
+  - bcrypt
+  - better-sqlite3
+  - esbuild
+  - sqlite3
