@@ -2,13 +2,23 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-const DB_DIR = path.join(__dirname);
-fs.mkdirSync(DB_DIR, { recursive: true });
+// En Vercel, la única carpeta escribible es /tmp
+const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
+const DB_DIR = isVercel ? '/tmp' : path.join(__dirname);
+
+if (!fs.existsSync(DB_DIR)) {
+    fs.mkdirSync(DB_DIR, { recursive: true });
+}
 
 const DB_PATH = path.join(DB_DIR, 'database.sqlite');
 const rawDb = new Database(DB_PATH);
-rawDb.pragma('journal_mode = WAL');
-console.log('Base de Datos Conectada (better-sqlite3)');
+
+// En /tmp o Serverless es mejor usar modo DELETE o MEMORY en lugar de WAL
+if (!isVercel) {
+    rawDb.pragma('journal_mode = WAL');
+}
+
+console.log(`Base de Datos Conectada en: ${DB_PATH}`);
 
 // Crear tablas si no existen
 rawDb.exec(`
@@ -37,7 +47,7 @@ rawDb.exec(`
 `);
 console.log('Tablas inicializadas correctamente.');
 
-// Wrapper compatible con la interfaz callback (get, all, run) usada por db/models.js
+// Wrapper compatible con la interfaz callback (get, all, run)
 const db = {
     get(sql, params, callback) {
         if (typeof params === 'function') {
