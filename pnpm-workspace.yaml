@@ -2,8 +2,6 @@ packages:
   - '.'
 
 onlyBuiltDependencies:
-  - '@vscode/sqlite3'
   - bcrypt
   - better-sqlite3
   - esbuild
-  - sqlite3
