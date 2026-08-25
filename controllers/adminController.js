@@ -7,7 +7,10 @@ const getLogin = (req, res) => {
     if (req.session && req.session.loggedIn && req.session.isAdmin) {
         return res.redirect('/admin');
     }
-    res.render('login', { error: req.query.error || null });
+    res.render('login', {
+        error: req.query.error || null,
+        logout: req.query.logout || null
+    });
 };
 
 // ─────────────────────────────────────────────
@@ -24,7 +27,6 @@ const postLogin = (req, res) => {
     const expectedPass = process.env.ADMIN_PASS || process.env.PASS || 'admin123';
 
     if (user === expectedUser && password === expectedPass) {
-        // Regenerar sesión para prevenir session fixation
         req.session.regenerate((err) => {
             if (err) {
                 console.error('Error al regenerar sesión admin:', err);
@@ -42,8 +44,31 @@ const postLogin = (req, res) => {
 // ─────────────────────────────────────────────
 // GET /admin
 // ─────────────────────────────────────────────
-const getAdmin = (req, res) => {
-    res.render('admin');
+const getAdmin = async (req, res) => {
+    try {
+        const empleados = await db.getempleados();
+        const historial = await db.getHistorialAsistencia();
+        const empleadoMasResponsable = await db.getEmpleadoMasResponsable();
+
+        const totalEmpleados = empleados.length;
+        const qrHabilitados = empleados.filter(e => e.tipo_jornada && e.tipo_jornada.trim() !== '').length;
+        const totalMarcajes = historial.length;
+
+        res.render('admin', {
+            stats: {
+                totalEmpleados,
+                qrHabilitados,
+                totalMarcajes
+            },
+            empleadoMasResponsable,
+            message: req.session.message || null
+        });
+
+        delete req.session.message;
+    } catch (error) {
+        console.error('Error al cargar panel admin:', error);
+        res.render('admin', { stats: { totalEmpleados: 0, qrHabilitados: 0, totalMarcajes: 0 }, message: null });
+    }
 };
 
 // ─────────────────────────────────────────────
@@ -52,30 +77,54 @@ const getAdmin = (req, res) => {
 const getTabGeneral = async (req, res) => {
     try {
         const empleados = await db.getempleados();
-        res.render('tabGeneral', { empleados });
+        const totalEmpleados = empleados.length;
+        const qrHabilitados = empleados.filter(e => e.tipo_jornada && e.tipo_jornada.trim() !== '').length;
+        const pendientesJornada = totalEmpleados - qrHabilitados;
+
+        res.render('tabGeneral', {
+            empleados,
+            stats: {
+                totalEmpleados,
+                qrHabilitados,
+                pendientesJornada
+            },
+            message: req.session.message || null
+        });
+
+        delete req.session.message;
     } catch (err) {
         console.error('Error al obtener empleados:', err);
-        res.render('tabGeneral', { empleados: [] });
+        res.render('tabGeneral', { empleados: [], stats: { totalEmpleados: 0, qrHabilitados: 0, pendientesJornada: 0 }, message: null });
     }
 };
 
 // ─────────────────────────────────────────────
 // POST /guardarEmpleado
-// Corrección crítica: el admin asigna contraseña temporal obligatoria
 // ─────────────────────────────────────────────
 const postGuardarEmpleado = async (req, res) => {
-    const { usuario, password, nombre, apellido, cedula, cargo, departamento, telefono, correo } = req.body;
+    const { usuario, password, nombre, apellido, cedula, cargo, departamento, telefono, correo, tipo_jornada, estatus_empleado, estatus_desde, estatus_hasta, estatus_observacion } = req.body;
 
     if (!usuario || !password) {
         return res.redirect('/tabGeneral?error=missingPasswordOrUser');
     }
 
+    const jornadaFinal    = (tipo_jornada && tipo_jornada.trim() !== '') ? tipo_jornada.trim() : 'Lunes a Viernes (8:00 AM - 5:00 PM)';
+    const estatusFinal    = estatus_empleado || 'Activo';
+    const estatusDesde    = (estatusFinal !== 'Activo' && estatus_desde)    ? estatus_desde    : null;
+    const estatusHasta    = (estatusFinal !== 'Activo' && estatus_hasta)    ? estatus_hasta    : null;
+    const estatusObs      = (estatusFinal !== 'Activo' && estatus_observacion) ? estatus_observacion.trim() : null;
+
     try {
         await db.registrarEmpleado(
             usuario, password, nombre, apellido,
             parseInt(cedula), cargo, departamento,
-            parseInt(telefono), correo
+            parseInt(telefono), correo, jornadaFinal, estatusFinal, estatusDesde, estatusHasta, estatusObs
         );
+
+        req.session.message = {
+            type: 'success',
+            text: `Empleado ${nombre} ${apellido || ''} registrado. Jornada: "${jornadaFinal}" | Estatus: ${estatusFinal}. ¡Código QR habilitado!`
+        };
         res.redirect('/tabGeneral');
     } catch (err) {
         console.error('Error al guardar empleado:', err);
@@ -112,14 +161,28 @@ const getEditEmpleado = async (req, res) => {
 // ─────────────────────────────────────────────
 const postUpdateEmpleado = async (req, res) => {
     const { id } = req.params;
-    const { usuario, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code } = req.body;
+    const { usuario, nombre, apellido, cedula, cargo, departamento, telefono, correo, qr_code, tipo_jornada, estatus_empleado, estatus_desde, estatus_hasta, estatus_observacion } = req.body;
+
+    const jornadaFinal = (tipo_jornada && tipo_jornada.trim() !== '') ? tipo_jornada.trim() : 'Lunes a Viernes (8:00 AM - 5:00 PM)';
+    const estatusFinal = estatus_empleado || 'Activo';
+    const estatusDesde = (estatusFinal !== 'Activo' && estatus_desde)       ? estatus_desde       : null;
+    const estatusHasta = (estatusFinal !== 'Activo' && estatus_hasta)       ? estatus_hasta       : null;
+    const estatusObs   = (estatusFinal !== 'Activo' && estatus_observacion) ? estatus_observacion.trim() : null;
 
     try {
+        const empleadoActual = await db.getempleadosID(id);
+        const fotoPerfil = empleadoActual ? empleadoActual.foto_perfil : null;
+
         await db.updateempleados(
             id, usuario, nombre, apellido,
             parseInt(cedula), cargo, departamento,
-            parseInt(telefono), correo, qr_code
+            parseInt(telefono), correo, qr_code, fotoPerfil, jornadaFinal, estatusFinal, estatusDesde, estatusHasta, estatusObs
         );
+
+        req.session.message = {
+            type: 'success',
+            text: `Empleado ${nombre} actualizado. Jornada: "${jornadaFinal}" | Estatus: ${estatusFinal}.`
+        };
         res.redirect('/tabGeneral');
     } catch (err) {
         console.error('Error al actualizar empleado:', err);
@@ -128,7 +191,7 @@ const postUpdateEmpleado = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────
-// POST /deleteempleado/:id  (era GET — corregido)
+// POST /deleteempleado/:id
 // ─────────────────────────────────────────────
 const postDeleteEmpleado = async (req, res) => {
     const { id } = req.params;

@@ -34,7 +34,12 @@ rawDb.exec(`
         telefono INTEGER,
         correo TEXT UNIQUE,
         qr_code TEXT UNIQUE,
-        foto_perfil TEXT
+        foto_perfil TEXT,
+        tipo_jornada TEXT,
+        estatus_empleado TEXT DEFAULT 'Activo',
+        estatus_desde TEXT,
+        estatus_hasta TEXT,
+        estatus_observacion TEXT
     );
     CREATE TABLE IF NOT EXISTS historial_asistencia (
         id_asistencia INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,9 +47,23 @@ rawDb.exec(`
         fecha TEXT NOT NULL,
         hora_entrada TEXT NOT NULL,
         hora_salida TEXT,
+        salida_manual INTEGER DEFAULT 0,
+        tipo_jornada TEXT,
+        observacion TEXT,
         FOREIGN KEY (empleado_id) REFERENCES empleados(id)
     );
 `);
+
+// Migraciones automáticas de columnas para bases de datos existentes
+try { rawDb.exec(`ALTER TABLE empleados ADD COLUMN tipo_jornada TEXT;`); } catch (e) {}
+try { rawDb.exec(`ALTER TABLE empleados ADD COLUMN estatus_empleado TEXT DEFAULT 'Activo';`); } catch (e) {}
+try { rawDb.exec(`ALTER TABLE empleados ADD COLUMN estatus_desde TEXT;`); } catch (e) {}
+try { rawDb.exec(`ALTER TABLE empleados ADD COLUMN estatus_hasta TEXT;`); } catch (e) {}
+try { rawDb.exec(`ALTER TABLE empleados ADD COLUMN estatus_observacion TEXT;`); } catch (e) {}
+try { rawDb.exec(`ALTER TABLE historial_asistencia ADD COLUMN salida_manual INTEGER DEFAULT 0;`); } catch (e) {}
+try { rawDb.exec(`ALTER TABLE historial_asistencia ADD COLUMN tipo_jornada TEXT;`); } catch (e) {}
+try { rawDb.exec(`ALTER TABLE historial_asistencia ADD COLUMN observacion TEXT;`); } catch (e) {}
+
 console.log('Tablas inicializadas correctamente.');
 
 // Wrapper compatible con la interfaz callback (get, all, run)

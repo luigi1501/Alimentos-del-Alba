@@ -1,3 +1,75 @@
-<h1><%= message %></h1>
-<h2><%= error.status %></h2>
-<pre><%= error.stack %></pre>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= locals.title || 'Atención' %> — Alimentos del Alba</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/stylesheets/main-theme.css">
+    <link rel="shortcut icon" href="/images/logo2.jpg" type="image/x-icon">
+</head>
+<body class="error-page-body">
+
+    <div class="error-card">
+        <% 
+            const status = locals.statusCode || (locals.error && locals.error.status) || 404;
+            let iconClass = 'bi-compass icon-404';
+            let badgeClass = 'bg-warning text-dark';
+            let defaultTitle = 'Página No Encontrada';
+            let defaultMessage = 'La sección o enlace que estás buscando no existe, ha sido movida o la dirección ingresada no es correcta.';
+
+            if (status === 403 || status === 401) {
+                iconClass = 'bi-shield-lock-fill icon-403';
+                badgeClass = 'bg-danger text-white';
+                defaultTitle = 'Acceso Restringido';
+                defaultMessage = 'No tienes autorización para acceder a esta sección de la plataforma. Si eres empleado, por favor ingresa desde tu panel personal.';
+            } else if (status >= 500) {
+                iconClass = 'bi-gear-wide-connected icon-500';
+                badgeClass = 'bg-info text-dark';
+                defaultTitle = 'Inconveniente Temporal';
+                defaultMessage = 'Tuvimos un pequeño inconveniente interno al procesar la información. Ya estamos trabajando para solucionarlo.';
+            }
+        %>
+
+        <div class="error-icon-box <%= iconClass %>">
+            <i class="bi <%= (status === 403 || status === 401) ? 'bi-shield-lock-fill' : (status >= 500 ? 'bi-gear-wide-connected' : 'bi-compass-fill') %>"></i>
+        </div>
+
+        <div>
+            <span class="error-status-badge <%= badgeClass %>">
+                <i class="bi bi-info-circle me-1"></i> Estado <%= status %>
+            </span>
+        </div>
+
+        <h1 class="h2 fw-bold text-dark mb-3">
+            <%= locals.title || defaultTitle %>
+        </h1>
+
+        <p class="text-muted fs-6 mb-4 leading-relaxed">
+            <%= locals.message || defaultMessage %>
+        </p>
+
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-4">
+            <% if (locals.userId || (locals.session && locals.session.userId)) { %>
+                <a href="/auth/panel-empleado" class="btn btn-alba-primary py-2 px-4">
+                    <i class="bi bi-person-badge me-1"></i> Ir a Mi Panel
+                </a>
+            <% } else if (locals.isAdmin || (locals.session && locals.session.isAdmin)) { %>
+                <a href="/admin" class="btn btn-alba-primary py-2 px-4">
+                    <i class="bi bi-speedometer2 me-1"></i> Ir al Panel Admin
+                </a>
+            <% } else { %>
+                <a href="/" class="btn btn-alba-primary py-2 px-4">
+                    <i class="bi bi-house-door-fill me-1"></i> Volver al Inicio
+                </a>
+            <% } %>
+
+            <a href="/auth/login-empleado" class="btn btn-alba-secondary py-2 px-4">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

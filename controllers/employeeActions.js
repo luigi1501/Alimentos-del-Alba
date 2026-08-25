@@ -118,7 +118,14 @@ const downloadQrPdf = async (req, res) => {
         }
 
         if (userPhotoPath) {
-            doc.image(userPhotoPath, photoX, photoY, { width: photoWidth, height: photoHeight, fit: [photoWidth, photoHeight] });
+            doc.save();
+            doc.roundedRect(photoX, photoY, photoWidth, photoHeight, 6).clip();
+            doc.image(userPhotoPath, photoX, photoY, {
+                cover: [photoWidth, photoHeight],
+                align: 'center',
+                valign: 'center'
+            });
+            doc.restore();
         }
 
         // 5. Datos del Empleado

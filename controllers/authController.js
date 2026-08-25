@@ -4,7 +4,10 @@ const {
     verificarPassword,
     getEmpleadoPorId,
     getHistorialAsistenciaPorEmpleado,
+    verificarEstadoQrEmpleado,
+    getEmpleadoMasResponsable,
 } = require('../db/models');
+const { formatFecha } = require('../utils/dateUtils');
 const QRCode = require('qrcode');
 
 // ─────────────────────────────────────────────
@@ -14,7 +17,10 @@ const getLoginEmpleado = (req, res) => {
     if (req.session && req.session.userId) {
         return res.redirect('/auth/panel-empleado');
     }
-    res.render('login-empleado', { error: req.query.error || null });
+    res.render('login-empleado', {
+        error: req.query.error || null,
+        logout: req.query.logout || null
+    });
 };
 
 // ─────────────────────────────────────────────
@@ -69,7 +75,7 @@ const getRegistroEmpleado = (req, res) => {
 // POST /auth/registro-empleado
 // ─────────────────────────────────────────────
 const postRegistroEmpleado = async (req, res) => {
-    const { usuario, password, confirm_password, nombre, apellido, cedula, cargo, departamento, telefono, correo } = req.body;
+    const { usuario, password, confirm_password, nombre, apellido, cedula, cargo, departamento, telefono, correo, tipo_jornada, estatus_empleado } = req.body;
 
     if (!usuario || !password || !confirm_password || !nombre || !apellido || !cedula || !correo) {
         return res.redirect('/auth/registro-empleado?error=missingFields');
@@ -79,11 +85,16 @@ const postRegistroEmpleado = async (req, res) => {
         return res.redirect('/auth/registro-empleado?error=passwordMismatch');
     }
 
+    const jornadaFinal = (tipo_jornada && tipo_jornada.trim() !== '') 
+        ? tipo_jornada.trim() 
+        : 'Lunes a Viernes (8:00 AM - 5:00 PM)';
+    const estatusFinal = estatus_empleado || 'Activo';
+
     try {
         const empleadoId = await registrarEmpleado(
             usuario, password, nombre, apellido,
             parseInt(cedula), cargo, departamento,
-            parseInt(telefono), correo
+            parseInt(telefono), correo, jornadaFinal, estatusFinal
         );
 
         res.redirect('/auth/login-empleado');
@@ -106,13 +117,19 @@ const postRegistroEmpleado = async (req, res) => {
 // GET /auth/logout
 // ─────────────────────────────────────────────
 const getLogout = (req, res, next) => {
+    const esAdmin = Boolean(req.session && (req.session.isAdmin || req.session.loggedIn));
+    
     req.session.destroy((err) => {
         if (err) {
             console.error('Error al destruir la sesión:', err);
             return next(err);
         }
         res.clearCookie('connect.sid');
-        res.redirect('/auth/login-empleado');
+        if (esAdmin) {
+            return res.redirect('/login?logout=success');
+        } else {
+            return res.redirect('/auth/login-empleado?logout=success');
+        }
     });
 };
 
@@ -122,15 +139,21 @@ const getLogout = (req, res, next) => {
 const getPanelEmpleado = async (req, res) => {
     try {
         const empleado = await getEmpleadoPorId(req.session.userId);
-        let qrCodeUrl = null;
+        const estadoQr = await verificarEstadoQrEmpleado(req.session.userId);
+        const topEmpleado = await getEmpleadoMasResponsable();
+        const esElMasResponsable = Boolean(topEmpleado && topEmpleado.id === req.session.userId);
 
-        if (empleado && empleado.cedula) {
+        let qrCodeUrl = null;
+        if (empleado && empleado.cedula && estadoQr.qrHabilitado) {
             qrCodeUrl = await QRCode.toDataURL(`ID:${empleado.id}|CI:${empleado.cedula}`);
         }
 
         res.render('panel-empleado', {
             empleado,
             qrCodeUrl,
+            estadoQr,
+            esElMasResponsable,
+            topEmpleado,
             message: req.session.message || null
         });
 
@@ -148,11 +171,20 @@ const getPanelEmpleado = async (req, res) => {
 // ─────────────────────────────────────────────
 const getHistorialPropio = async (req, res) => {
     try {
-        const historial = await getHistorialAsistenciaPorEmpleado(req.session.userId);
-        res.render('historial-asistencia', { historial, error: null });
+        const empleado = await getEmpleadoPorId(req.session.userId);
+        const historialRaw = await getHistorialAsistenciaPorEmpleado(req.session.userId);
+
+        const historial = (historialRaw || []).map(registro => ({
+            ...registro,
+            fechaFormatted: formatFecha(registro.fecha) || registro.fecha,
+            horaEntradaFormatted: registro.hora_entrada || 'N/A',
+            horaSalidaFormatted: registro.hora_salida || 'N/A'
+        }));
+
+        res.render('historial-empleado', { empleado, historial, error: null });
     } catch (error) {
         console.error('Error al obtener historial de asistencia del empleado:', error);
-        res.render('historial-asistencia', { historial: [], error: 'Error al cargar tu historial de asistencia.' });
+        res.render('historial-empleado', { empleado: null, historial: [], error: 'Error al cargar tu historial de asistencia.' });
     }
 };
 

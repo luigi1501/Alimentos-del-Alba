@@ -51,6 +51,7 @@ app.use(session({
 // ── Variables locales de sesión ────────────────────────────────
 app.use((req, res, next) => {
     res.locals.userId = req.session.userId;
+    res.locals.isAdmin = req.session.isAdmin;
     res.locals.nombreEmpleado = req.session.nombreEmpleado;
     res.locals.empleadoApellido = req.session.empleadoApellido;
     res.locals.message = req.session.message;
@@ -76,12 +77,17 @@ const indexRouter = require('./routes/index');
 app.use('/auth', authRouter);
 app.use('/', indexRouter);
 
-// ── 404 ────────────────────────────────────────────────────────
+// ── 404 Página no encontrada ───────────────────────────────────
 app.use((req, res) => {
-    res.status(404).send('Lo siento, no puedo encontrar eso!');
+    res.status(404).render('error', {
+        statusCode: 404,
+        title: 'Página no encontrada',
+        message: 'La sección o dirección que intentas visitar no existe o ha sido movida.',
+        session: req.session
+    });
 });
 
-// ── Manejo de errores ──────────────────────────────────────────
+// ── Manejo de errores del servidor (500) ────────────────────────
 app.use((err, req, res, next) => {
     console.error(err.stack);
 
@@ -94,7 +100,12 @@ app.use((err, req, res, next) => {
         return res.redirect('/auth/panel-empleado');
     }
 
-    res.status(500).send('¡Algo salió mal en el servidor!');
+    res.status(500).render('error', {
+        statusCode: 500,
+        title: 'Inconveniente temporal',
+        message: 'Tuvimos un pequeño problema técnico en nuestro servidor. Por favor intenta nuevamente en unos momentos.',
+        session: req.session
+    });
 });
 
 // ── Exportar para Vercel ──────────────────────────────────────

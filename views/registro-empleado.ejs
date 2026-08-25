@@ -8,51 +8,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/stylesheets/main-theme.css">
     <link rel="shortcut icon" href="/images/logo2.jpg" type="image/x-icon">
-    <style>
-        body {
-            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1rem;
-        }
-        .register-card {
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(20px);
-            border-radius: var(--radius-lg);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-            max-width: 720px;
-            width: 100%;
-            padding: 2.5rem;
-        }
-        .strength-meter {
-            height: 6px;
-            border-radius: 3px;
-            background-color: var(--slate-200);
-            transition: all 0.3s ease;
-        }
-        .req-list {
-            font-size: 0.82rem;
-            list-style: none;
-            padding-left: 0;
-            margin-bottom: 0;
-        }
-        .req-list li {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            color: var(--slate-500);
-            transition: color 0.2s ease;
-        }
-        .req-list li.valid {
-            color: #10B981;
-            font-weight: 600;
-        }
-    </style>
 </head>
-<body>
+<body class="register-card-body">
 
     <div class="register-card">
         <div class="text-center mb-4">
@@ -150,6 +107,63 @@
                 <div class="col-md-6">
                     <label for="departamento" class="alba-label">Departamento *</label>
                     <input type="text" id="departamento" name="departamento" class="form-control alba-input" placeholder="Ej. Calidad" required>
+                </div>
+
+                <!-- Tipo de Jornada & Días (Texto Libre) -->
+                <div class="col-md-6">
+                    <label for="tipo_jornada" class="alba-label">Tipo de Jornada y Días de Trabajo *</label>
+                    <input type="text" 
+                           id="tipo_jornada" 
+                           name="tipo_jornada" 
+                           class="form-control alba-input" 
+                           placeholder="Ej. Lunes a Viernes (8:00 AM - 5:00 PM)" 
+                           required>
+                    <div class="form-text small text-muted mt-1">
+                        <i class="bi bi-info-circle me-1"></i> Escribe los días y el horario exacto (ej. <em>Lunes a Sábado (7:00 AM - 3:00 PM)</em>).
+                    </div>
+                </div>
+
+                <!-- Estatus del Empleado -->
+                <div class="col-md-6">
+                    <label for="estatus_empleado" class="alba-label">Estatus del Empleado</label>
+                    <select id="estatus_empleado" name="estatus_empleado" class="form-select alba-input">
+                        <option value="Activo" selected>✅ Activo</option>
+                        <option value="De Vacaciones">🏖️ De Vacaciones</option>
+                        <option value="En Reposo Médico">🏥 En Reposo Médico</option>
+                        <option value="Permiso Especial">📋 Permiso Especial</option>
+                        <option value="Suspendido">🚫 Suspendido</option>
+                        <option value="Baja Temporal">⏸️ Baja Temporal</option>
+                        <option value="Inactivo">🔴 Inactivo</option>
+                    </select>
+                    <div class="form-text small text-success mt-1">
+                        <i class="bi bi-shield-check me-1"></i> Solo estatus <strong>Activo</strong> habilita el QR de asistencia.
+                    </div>
+                </div>
+
+                <!-- Detalle del Estatus (visible solo cuando no es Activo) -->
+                <div id="detalle-estatus-registro" class="col-12 d-none">
+                    <div class="card border-warning-subtle bg-warning-subtle p-3">
+                        <p class="small fw-bold text-warning-emphasis mb-2">
+                            <i class="bi bi-calendar-range me-1"></i> Período y Motivo del Estatus
+                        </p>
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label for="estatus_desde" class="alba-label small">Fecha Inicio</label>
+                                <input type="date" id="estatus_desde" name="estatus_desde" class="form-control alba-input">
+                                <div class="form-text small">Desde cuándo aplica.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="estatus_hasta" class="alba-label small">Fecha de Retorno Estimada</label>
+                                <input type="date" id="estatus_hasta" name="estatus_hasta" class="form-control alba-input">
+                                <div class="form-text small">Hasta cuándo dura (opcional).</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="estatus_observacion" class="alba-label small">Motivo / Observación</label>
+                                <input type="text" id="estatus_observacion" name="estatus_observacion" class="form-control alba-input"
+                                       placeholder="Ej. Reposo por operación, vacaciones aprobadas...">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 🔑 SECCIÓN DE CONTRASEÑAS -->
@@ -313,6 +327,22 @@
 
             passwordInput.addEventListener('input', evaluatePassword);
             confirmInput.addEventListener('input', evaluatePassword);
+
+            // Toggle panel de detalle de estatus
+            const selectEstatus = document.getElementById('estatus_empleado');
+            const detalleEstatus = document.getElementById('detalle-estatus-registro');
+
+            if (selectEstatus && detalleEstatus) {
+                function toggleDetalleEstatus() {
+                    if (selectEstatus.value && selectEstatus.value !== 'Activo') {
+                        detalleEstatus.classList.remove('d-none');
+                    } else {
+                        detalleEstatus.classList.add('d-none');
+                    }
+                }
+                selectEstatus.addEventListener('change', toggleDetalleEstatus);
+                toggleDetalleEstatus();
+            }
 
             // Validar submit
             form.addEventListener('submit', (e) => {

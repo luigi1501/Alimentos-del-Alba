@@ -8,48 +8,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/stylesheets/main-theme.css">
     <link rel="shortcut icon" href="/images/logo2.jpg" type="image/x-icon">
-    <style>
-        .profile-header-card {
-            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-            border-radius: var(--radius-lg);
-            color: #FFFFFF;
-            padding: 2.5rem 2rem;
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-        }
-        .profile-avatar-wrapper {
-            position: relative;
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            border: 4px solid var(--primary);
-            box-shadow: var(--shadow-glow-amber);
-            overflow: hidden;
-            background: #FFFFFF;
-        }
-        .profile-avatar-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .qr-card-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--card-border);
-            box-shadow: var(--shadow-md);
-            padding: 2rem;
-            text-align: center;
-        }
-        .qr-image-frame {
-            background: #FFFFFF;
-            padding: 1rem;
-            border-radius: 16px;
-            display: inline-block;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-            border: 1px solid var(--slate-200);
-        }
-    </style>
 </head>
 <body>
 
@@ -84,6 +42,19 @@
 
         <% if (locals.empleado) { %>
             
+            <!-- 🏆 BANNER DE RECONOCIMIENTO — EMPLEADO MÁS RESPONSABLE -->
+            <% if (locals.esElMasResponsable) { %>
+                <div class="alert alert-warning border-0 p-3 mb-4 shadow-sm rounded-4 text-dark d-flex align-items-center gap-3" style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border-left: 5px solid #F59E0B !important;">
+                    <div class="fs-1 text-warning flex-shrink-0">🏆</div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1"><i class="bi bi-star-fill text-warning me-1"></i> ¡Mención de Honor: Empleado Más Responsable!</h5>
+                        <p class="mb-0 small text-dark">
+                            ¡Felicitaciones, <strong><%= empleado.nombre %></strong>! Has sido reconocido por la administración como el <strong>Empleado #1 en Puntualidad y Compromiso</strong> de Alimentos del Alba. ¡Gracias por tu dedicación ejemplar!
+                        </p>
+                    </div>
+                </div>
+            <% } %>
+
             <!-- Employee Profile Hero Card -->
             <div class="profile-header-card mb-4">
                 <div class="row align-items-center g-4">
@@ -99,10 +70,16 @@
                         </div>
                     </div>
                     <div class="col">
-                        <h1 class="h2 fw-bold text-white mb-1"><%- empleado.nombre %> <%- empleado.apellido || '' %></h1>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h1 class="h2 fw-bold text-white mb-0"><%- empleado.nombre %> <%- empleado.apellido || '' %></h1>
+                            <% if (locals.esElMasResponsable) { %>
+                                <span class="badge bg-warning text-dark fw-bold fs-6"><i class="bi bi-trophy-fill me-1"></i> #1 Puntualidad</span>
+                            <% } %>
+                        </div>
                         <div class="d-flex flex-wrap gap-2 align-items-center text-light mt-2">
                             <span class="badge badge-alba-amber fs-6"><i class="bi bi-briefcase me-1"></i> <%- empleado.cargo || 'Empleado' %></span>
                             <span class="badge badge-alba-slate fs-6"><i class="bi bi-building me-1"></i> <%- empleado.departamento || 'General' %></span>
+                            <span class="badge badge-alba-emerald fs-6"><i class="bi bi-clock me-1"></i> Turno: <%- empleado.tipo_jornada || 'Diurna (8:00 AM - 5:00 PM)' %></span>
                             <span class="text-slate-400 small ms-2"><i class="bi bi-card-heading me-1"></i> C.I: <strong><%- empleado.cedula %></strong></span>
                         </div>
                     </div>
@@ -122,17 +99,29 @@
                             </div>
                             <p class="text-muted small mb-4">Muestra este código frente al escáner de la empresa para marcar tu entrada y salida.</p>
 
-                            <% if (locals.qrCodeUrl) { %>
+                            <% if (locals.estadoQr && !locals.estadoQr.qrHabilitado) { %>
+                                <!-- Alerta de QR Bloqueado o Pendiente -->
+                                <div class="alert alert-danger text-start p-3 my-3 border-danger shadow-sm">
+                                    <div class="d-flex align-items-start gap-2">
+                                        <i class="bi bi-lock-fill text-danger fs-3 flex-shrink-0"></i>
+                                        <div>
+                                            <h6 class="fw-bold mb-1 text-danger">Código QR Temporalmente Bloqueado</h6>
+                                            <p class="small mb-2 text-dark"><%= estadoQr.motivo %></p>
+                                            <div class="small text-muted"><i class="bi bi-headset me-1"></i> Por favor, contacta al Administrador de planta para que registre tu salida manual y habilite tu QR de inmediato.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } else if (locals.qrCodeUrl) { %>
                                 <div class="qr-image-frame mb-3">
                                     <img src="<%- locals.qrCodeUrl %>" alt="Código QR de Asistencia" class="img-fluid" style="max-width: 220px;">
                                 </div>
-                                <div class="small text-muted mb-4"><i class="bi bi-info-circle me-1"></i> Código único vinculado a la cédula <%= empleado.cedula %></div>
+                                <div class="small text-muted mb-4"><i class="bi bi-shield-check text-success me-1"></i> Código único vinculado a la cédula <%= empleado.cedula %> (Jornada Activa)</div>
                             <% } else { %>
                                 <div class="alert alert-warning my-4">No se pudo generar el código QR en este momento.</div>
                             <% } %>
                         </div>
 
-                        <% if (locals.qrCodeUrl) { %>
+                        <% if (locals.qrCodeUrl && locals.estadoQr && locals.estadoQr.qrHabilitado) { %>
                             <div>
                                 <a href="/auth/descargar-qr-pdf" class="btn btn-alba-emerald w-100 py-2">
                                     <i class="bi bi-file-earmark-pdf-fill me-1"></i> Descargar Carnet QR (PDF)

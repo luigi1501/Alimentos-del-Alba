@@ -29,7 +29,10 @@ router.post('/deleteempleado/:id', isAdmin, adminController.postDeleteEmpleado);
 
 // ── Asistencia ─────────────────────────────────────────────────
 router.get('/escanear-asistencia', adminController.getEscanearAsistencia);
+router.post('/consultar-estado-scan', attendanceController.consultarEstadoScan);
 router.post('/registrar-asistencia', attendanceController.registrarAsistenciaQR);
 router.get('/historial-asistencia', attendanceController.mostrarHistorialAsistencia);
+router.get('/exportar-excel-historial', isAdmin, attendanceController.exportarExcelGeneral);
+router.post('/cerrar-salida-manual', isAdmin, attendanceController.cerrarSalidaManual);
 
 module.exports = router;

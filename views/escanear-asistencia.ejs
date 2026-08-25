@@ -8,62 +8,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/stylesheets/main-theme.css">
     <link rel="shortcut icon" href="/images/logo2.jpg" type="image/x-icon">
-    <style>
-        .scanner-card {
-            background: #FFFFFF;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--card-border);
-            box-shadow: var(--shadow-lg);
-            padding: 2rem;
-            max-width: 600px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        #video-container {
-            position: relative;
-            width: 100%;
-            max-width: 440px;
-            margin: 0 auto 1.5rem auto;
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            border: 3px solid var(--primary);
-            box-shadow: var(--shadow-glow-amber);
-            background: #000000;
-            display: none;
-        }
-        #video {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-        .scanner-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 200px;
-            height: 200px;
-            border: 2px dashed rgba(245, 158, 11, 0.8);
-            border-radius: 12px;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
-            pointer-events: none;
-        }
-        #canvas {
-            display: none;
-        }
-        #resultado {
-            font-family: var(--font-heading);
-            font-weight: 600;
-            margin-top: 1rem;
-        }
-        #action-buttons {
-            display: none;
-            gap: 0.75rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 1.5rem;
-        }
-    </style>
 </head>
 <body>
 
@@ -87,7 +31,7 @@
         <div class="scanner-card">
             <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
                 <i class="bi bi-qr-code-scan text-warning fs-2"></i>
-                <h1 class="h3 fw-bold mb-0">Escáner de Asistencia</h1>
+                <h1 class="h3 fw-bold mb-0">Escáner de Asistencia Inteligente</h1>
             </div>
             <p class="text-muted small mb-4">Apunta la cámara del dispositivo al código QR del carnet del empleado.</p>
 
@@ -106,27 +50,61 @@
 
             <div id="resultado" class="alert alert-info d-none" role="alert"></div>
 
-            <div id="action-buttons">
-                <button id="registrar-entrada-button" class="btn btn-alba-emerald flex-grow-1 py-2 fs-6">
-                    <i class="bi bi-box-arrow-in-right me-1"></i> Registrar Entrada
+            <div id="employee-info-card" class="d-none"></div>
+
+            <div id="action-buttons" class="mt-3">
+                <button id="registrar-entrada-button" class="btn btn-alba-emerald w-100 py-2.5 fs-5 mb-2 d-none">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Confirmar y Registrar Entrada
                 </button>
-                <button id="registrar-salida-button" class="btn btn-alba-primary flex-grow-1 py-2 fs-6">
-                    <i class="bi bi-box-arrow-right me-1"></i> Registrar Salida
+                <button id="registrar-salida-button" class="btn btn-alba-primary w-100 py-2.5 fs-5 mb-2 d-none">
+                    <i class="bi bi-box-arrow-right me-2"></i> Confirmar y Registrar Salida
                 </button>
-                <button id="reiniciar-scan-button" class="btn btn-alba-secondary py-2">
-                    <i class="bi bi-arrow-repeat me-1"></i> Escanear Otro
+                <button id="reiniciar-scan-button" class="btn btn-alba-secondary w-100 py-2 d-none">
+                    <i class="bi bi-arrow-repeat me-1"></i> Escanear Otro Código
                 </button>
             </div>
         </div>
 
     </main>
 
+    <!-- Modal de Justificación si está Fuera de Horario -->
+    <div class="modal fade" id="modalJustificacionEscaneo" tabindex="-1" aria-labelledby="modalJustificacionEscaneoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header bg-warning text-dark rounded-top-4">
+                    <h5 class="modal-title h6 fw-bold" id="modalJustificacionEscaneoLabel">
+                        <i class="bi bi-clock-history me-2"></i> Justificación de Marcaje Fuera de Horario
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-start">
+                    <div id="modal-justificacion-alerta" class="alert alert-warning small mb-3">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Estás marcando fuera de tu horario asignado. Por favor ingresa el motivo.
+                    </div>
+                    <div class="mb-3">
+                        <label for="input-observacion-escaneo" class="alba-label small fw-bold text-dark">Motivo / Justificación del Marcaje *</label>
+                        <textarea id="input-observacion-escaneo" class="form-control alba-input" rows="3"
+                                  placeholder="Ej: Llegada con retraso por transporte público, permiso médico autorizado, tiempo extra otorgado por supervisión..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light rounded-bottom-4 border-top">
+                    <button type="button" class="btn btn-alba-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="btn-guardar-justificacion" class="btn btn-alba-primary">
+                        <i class="bi bi-check-circle-fill me-1"></i> Guardar Marcaje con Justificación
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script>
         const video = document.getElementById('video');
         const videoContainer = document.getElementById('video-container');
         const canvas = document.getElementById('canvas');
         const resultadoDiv = document.getElementById('resultado');
+        const employeeCardDiv = document.getElementById('employee-info-card');
         const canvasContext = canvas.getContext('2d');
         const startScanButton = document.getElementById('start-scan-button');
         const actionButtonsDiv = document.getElementById('action-buttons');
@@ -136,43 +114,161 @@
 
         let scanning = false;
         let scannedCode = null;
+        let currentScanData = null;
+        let pendingActionType = null;
+        let modalJustificacionBs = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalJustificacionBs = new bootstrap.Modal(document.getElementById('modalJustificacionEscaneo'));
+        });
+
+        // Reproductor de efectos de sonido con Web Audio API
+        function playBeep(type = 'success') {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                } else {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(280, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.35);
+                }
+            } catch (e) {
+                console.log('Audio feedback not available:', e);
+            }
+        }
 
         function mostrarMensaje(texto, tipo = 'info') {
             resultadoDiv.className = `alert alert-${tipo} mt-3 d-block`;
             resultadoDiv.innerHTML = texto;
         }
 
+        function ocultarMensaje() {
+            resultadoDiv.className = 'd-none';
+        }
+
         startScanButton.addEventListener('click', () => {
+            resetScanner();
             startScan();
             startScanButton.parentElement.style.display = 'none';
             videoContainer.style.display = 'block';
-            resultadoDiv.classList.add('d-none');
-            actionButtonsDiv.style.display = 'none';
-            scannedCode = null;
         });
 
         reiniciarScanButton.addEventListener('click', () => {
+            resetScanner();
             startScan();
+            startScanButton.parentElement.style.display = 'none';
             videoContainer.style.display = 'block';
-            actionButtonsDiv.style.display = 'none';
-            resultadoDiv.classList.add('d-none');
+        });
+
+        function resetScanner() {
             scannedCode = null;
-        });
+            currentScanData = null;
+            pendingActionType = null;
+            ocultarMensaje();
+            employeeCardDiv.className = 'd-none';
+            employeeCardDiv.innerHTML = '';
+            actionButtonsDiv.style.display = 'none';
+            registrarEntradaButton.classList.add('d-none');
+            registrarSalidaButton.classList.add('d-none');
+            reiniciarScanButton.classList.add('d-none');
+        }
 
-        registrarEntradaButton.addEventListener('click', () => {
-            if (scannedCode) {
-                registrarAsistencia('entrada', scannedCode);
-            } else {
-                mostrarMensaje('<i class="bi bi-exclamation-triangle me-1"></i> No se ha detectado un código QR válido.', 'warning');
-            }
-        });
+        // Evalúa si la hora actual está fuera de la jornada asignada
+        function evaluarFueraDeHorario(tipoJornada, esSalida) {
+            if (!tipoJornada) return { fueraDeHora: false };
 
-        registrarSalidaButton.addEventListener('click', () => {
-            if (scannedCode) {
-                registrarAsistencia('salida', scannedCode);
-            } else {
-                mostrarMensaje('<i class="bi bi-exclamation-triangle me-1"></i> No se ha detectado un código QR válido.', 'warning');
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+            // Buscar horas en formato hh:mm (ej: 8:00 AM - 5:00 PM)
+            const matches = tipoJornada.match(/(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/g);
+            if (!matches || matches.length < 2) {
+                return { fueraDeHora: false };
             }
+
+            const parseTimeToMinutes = (str) => {
+                const parts = str.match(/(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/i);
+                if (!parts) return null;
+                let hrs = parseInt(parts[1]);
+                const mins = parseInt(parts[2]);
+                const ampm = parts[3] ? parts[3].toUpperCase() : null;
+
+                if (ampm === 'PM' && hrs < 12) hrs += 12;
+                if (ampm === 'AM' && hrs === 12) hrs = 0;
+
+                return hrs * 60 + mins;
+            };
+
+            const startMins = parseTimeToMinutes(matches[0]);
+            const endMins = parseTimeToMinutes(matches[1]);
+
+            if (startMins === null || endMins === null) return { fueraDeHora: false };
+
+            if (!esSalida) {
+                // Entrada: toleramos hasta 15 min de retraso
+                if (currentMinutes > startMins + 15) {
+                    const diff = currentMinutes - startMins;
+                    return {
+                        fueraDeHora: true,
+                        mensaje: `Estás marcando Entrada con ${diff} minutos de retraso respecto a tu turno regular [${matches[0]}].`
+                    };
+                }
+            } else {
+                // Salida: si sale antes de la hora de fin (tolerancia 15 min)
+                if (currentMinutes < endMins - 15) {
+                    const diff = endMins - currentMinutes;
+                    return {
+                        fueraDeHora: true,
+                        mensaje: `Estás marcando Salida ${diff} minutos antes de finalizar tu jornada regular [${matches[1]}].`
+                    };
+                }
+            }
+
+            return { fueraDeHora: false };
+        }
+
+        function manejarClickAccion(tipo) {
+            if (!scannedCode) {
+                mostrarMensaje('<i class="bi bi-exclamation-triangle me-1"></i> No se ha detectado un código QR válido.', 'warning');
+                return;
+            }
+
+            pendingActionType = tipo;
+            const jornada = currentScanData && currentScanData.empleado ? currentScanData.empleado.tipo_jornada : '';
+            const evaluacion = evaluarFueraDeHorario(jornada, tipo === 'salida');
+
+            if (evaluacion.fueraDeHora) {
+                document.getElementById('modal-justificacion-alerta').innerHTML = `
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>Atención:</strong> ${evaluacion.mensaje}
+                `;
+                document.getElementById('input-observacion-escaneo').value = '';
+                modalJustificacionBs.show();
+            } else {
+                registrarAsistencia(tipo, scannedCode, null);
+            }
+        }
+
+        registrarEntradaButton.addEventListener('click', () => manejarClickAccion('entrada'));
+        registrarSalidaButton.addEventListener('click', () => manejarClickAccion('salida'));
+
+        document.getElementById('btn-guardar-justificacion').addEventListener('click', () => {
+            const obsInput = document.getElementById('input-observacion-escaneo').value.trim();
+            modalJustificacionBs.hide();
+            registrarAsistencia(pendingActionType, scannedCode, obsInput || 'Marcaje fuera de horario asignado');
         });
 
         function startScan() {
@@ -214,9 +310,8 @@
                 if (code) {
                     stopScan();
                     scannedCode = code.data;
-                    mostrarMensaje('<i class="bi bi-check-circle-fill me-1"></i> ¡Código QR detectado con éxito! Selecciona el tipo de marcaje:', 'success');
-                    actionButtonsDiv.style.display = 'flex';
                     videoContainer.style.display = 'none';
+                    consultarEstadoEscaneo(scannedCode);
                 } else {
                     requestAnimationFrame(scanQRCode);
                 }
@@ -225,32 +320,115 @@
             }
         }
 
-        function registrarAsistencia(tipo, qrCode) {
+        function consultarEstadoEscaneo(qrCode) {
+            mostrarMensaje('<i class="bi bi-hourglass-split me-1"></i> Identificando código QR y consultando estado...', 'info');
+
+            fetch('/consultar-estado-scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ qr_code: qrCode })
+            })
+            .then(res => res.json())
+            .then(data => {
+                ocultarMensaje();
+                if (data.error) {
+                    playBeep('error');
+                    actionButtonsDiv.style.display = 'flex';
+                    if (data.blocked) {
+                        employeeCardDiv.className = 'alert alert-danger p-3 my-3 shadow-sm text-start d-block';
+                        employeeCardDiv.innerHTML = `
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-lock-fill fs-3 text-danger flex-shrink-0"></i>
+                                <div>
+                                    <h6 class="fw-bold text-danger mb-1">Código QR Bloqueado</h6>
+                                    <div class="small text-dark mb-2">${data.message}</div>
+                                    <div class="small text-muted"><i class="bi bi-person-badge me-1"></i> Empleado: <strong>${data.empleado ? data.empleado.nombre + ' ' + (data.empleado.apellido || '') : 'Desconocido'}</strong></div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        mostrarMensaje(`<i class="bi bi-x-circle-fill me-1"></i> ${data.message}`, 'danger');
+                    }
+                    reiniciarScanButton.classList.remove('d-none');
+                    return;
+                }
+
+                playBeep('success');
+                currentScanData = data;
+
+                // Renderizar Tarjeta de Información Inteligente
+                employeeCardDiv.className = 'card p-3 my-3 border-0 bg-light shadow-sm text-start d-block';
+                const emp = data.empleado;
+                const tieneEntrada = data.tieneEntradaHoy;
+
+                employeeCardDiv.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="fw-bold fs-5 text-dark">${emp.nombre}</span>
+                        <span class="badge bg-secondary">C.I: V-${emp.cedula}</span>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                        <span class="badge badge-alba-amber"><i class="bi bi-briefcase me-1"></i> ${emp.cargo}</span>
+                        <span class="badge badge-alba-slate"><i class="bi bi-building me-1"></i> ${emp.departamento}</span>
+                        <span class="badge badge-alba-emerald"><i class="bi bi-clock me-1"></i> Turno: ${emp.tipo_jornada}</span>
+                    </div>
+                    <div class="p-2 rounded-2 ${tieneEntrada ? 'bg-info-subtle text-info-emphasis' : 'bg-success-subtle text-success-emphasis'} small fw-semibold mt-2">
+                        <i class="bi bi-${tieneEntrada ? 'box-arrow-right' : 'box-arrow-in-right'} me-1"></i> ${data.mensajeEstado}
+                    </div>
+                `;
+
+                // Hacer visible el contenedor de botones
+                actionButtonsDiv.style.display = 'flex';
+
+                // Mostrar SOLO el botón correspondiente a la acción lógica
+                if (tieneEntrada) {
+                    registrarSalidaButton.classList.remove('d-none');
+                    registrarEntradaButton.classList.add('d-none');
+                } else {
+                    registrarEntradaButton.classList.remove('d-none');
+                    registrarSalidaButton.classList.add('d-none');
+                }
+                reiniciarScanButton.classList.remove('d-none');
+            })
+            .catch(err => {
+                console.error('Error al consultar estado:', err);
+                playBeep('error');
+                actionButtonsDiv.style.display = 'flex';
+                mostrarMensaje('<i class="bi bi-wifi-off me-1"></i> Error de conexión al consultar el QR.', 'danger');
+                reiniciarScanButton.classList.remove('d-none');
+            });
+        }
+
+        function registrarAsistencia(tipo, qrCode, observacion = null) {
             mostrarMensaje(`<i class="bi bi-hourglass-split me-1"></i> Registrando marcaje de ${tipo}...`, 'info');
 
             fetch('/registrar-asistencia', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ qr_code: qrCode, tipo: tipo })
+                body: JSON.stringify({ qr_code: qrCode, tipo: tipo, observacion: observacion })
             })
             .then(response => response.json())
             .then(data => {
+                employeeCardDiv.className = 'd-none';
+                actionButtonsDiv.style.display = 'none';
+                registrarEntradaButton.classList.add('d-none');
+                registrarSalidaButton.classList.add('d-none');
+
                 if (data.error) {
+                    playBeep('error');
                     mostrarMensaje(`<i class="bi bi-x-circle-fill me-1"></i> ${data.message}`, 'danger');
                 } else {
+                    playBeep('success');
                     mostrarMensaje(`<i class="bi bi-check-circle-fill me-1"></i> ${data.message}`, 'success');
                 }
-                actionButtonsDiv.style.display = 'none';
-                startScanButton.parentElement.style.display = 'block';
-                videoContainer.style.display = 'none';
                 scannedCode = null;
+                currentScanData = null;
             })
             .catch(error => {
-                mostrarMensaje('<i class="bi bi-wifi-off me-1"></i> Error de conexión al registrar asistencia.', 'danger');
+                playBeep('error');
                 actionButtonsDiv.style.display = 'none';
-                startScanButton.parentElement.style.display = 'block';
-                videoContainer.style.display = 'none';
+                mostrarMensaje('<i class="bi bi-wifi-off me-1"></i> Error de conexión al registrar asistencia.', 'danger');
                 scannedCode = null;
+                currentScanData = null;
             });
         }
     </script>

@@ -378,17 +378,672 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0;
 }
 
-/* Responsive Utilities */
-@media (max-width: 768px) {
-  .alba-hero-mini {
-    padding: 1.75rem 1.25rem;
+/* ==========================================================================
+   RESPONSIVE UTILITIES — Mobile-First Overrides
+   ========================================================================== */
+
+/* ── Navbar ── */
+@media (max-width: 576px) {
+  .alba-navbar {
+    padding: 0.65rem 1rem;
   }
 
-  .alba-hero-mini h1 {
-    font-size: 1.5rem;
+  .alba-navbar .navbar-brand span {
+    font-size: 1rem;
+    max-width: 130px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .btn-alba-primary, .btn-alba-secondary, .btn-alba-emerald {
-    width: 100%;
+  .alba-navbar .brand-logo {
+    height: 34px;
+    width: 34px;
+  }
+
+  .alba-navbar .btn {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.6rem;
   }
 }
+
+/* ── Hero Banner ── */
+.alba-hero-mini {
+  padding: 1.75rem 1.25rem;
+}
+
+.alba-hero-mini h1 {
+  font-size: 1.45rem;
+}
+
+@media (min-width: 768px) {
+  .alba-hero-mini {
+    padding: 2.5rem 2rem;
+  }
+  .alba-hero-mini h1 {
+    font-size: 2rem;
+  }
+}
+
+/* ── Buttons — Full width on mobile, auto on larger ── */
+.btn-alba-primary,
+.btn-alba-secondary,
+.btn-alba-emerald {
+  white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+  .btn-alba-primary,
+  .btn-alba-secondary,
+  .btn-alba-emerald {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .d-flex.gap-2 > .btn-alba-primary,
+  .d-flex.gap-2 > .btn-alba-secondary,
+  .d-flex.gap-2 > .btn-alba-emerald {
+    width: auto;
+    flex: 1;
+  }
+}
+
+/* ── Tables — Horizontal scroll on small screens ── */
+.alba-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.alba-table {
+  min-width: 700px;
+}
+
+.alba-table td,
+.alba-table th {
+  padding: 0.75rem 0.9rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .alba-table td,
+  .alba-table th {
+    padding: 0.6rem 0.7rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* ── Cards — better spacing on mobile ── */
+.alba-card {
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 576px) {
+  .alba-card {
+    border-radius: var(--radius-sm);
+    padding: 1rem !important;
+  }
+}
+
+/* ── Form inputs — Prevent zoom on iOS ── */
+.alba-input,
+.form-control.alba-input,
+.form-select.alba-input {
+  font-size: 1rem; /* ≥16px prevents iOS zoom */
+}
+
+@media (min-width: 768px) {
+  .alba-input,
+  .form-control.alba-input,
+  .form-select.alba-input {
+    font-size: 0.95rem;
+  }
+}
+
+/* ── Login / Register Cards ── */
+@media (max-width: 576px) {
+  .login-card,
+  .employee-card {
+    padding: 1.75rem 1.25rem;
+    border-radius: var(--radius-md);
+  }
+
+  .register-card {
+    padding: 1.5rem 1rem;
+    border-radius: var(--radius-md);
+  }
+}
+
+/* ── Profile Header Card ── */
+@media (max-width: 576px) {
+  .profile-header-card {
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+
+  .profile-avatar-wrapper {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+  }
+}
+
+/* ── Scanner Page ── */
+.scanner-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-lg);
+  padding: 1.5rem 1.25rem;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+@media (min-width: 576px) {
+  .scanner-card {
+    padding: 2rem 2rem;
+  }
+}
+
+#video-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto 1.25rem auto;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 3px solid var(--primary);
+  box-shadow: var(--shadow-glow-amber);
+  background: #000000;
+  display: none;
+  aspect-ratio: 4/3;
+}
+
+#video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.scanner-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(200px, 70%);
+  height: min(200px, 70%);
+  border: 2.5px dashed rgba(245, 158, 11, 0.85);
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+#canvas {
+  display: none;
+}
+
+#resultado {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  margin-top: 1rem;
+  word-break: break-word;
+}
+
+#action-buttons {
+  display: none;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  align-items: stretch;
+}
+
+/* Employee info card in scanner */
+#employee-info-card {
+  text-align: left;
+  border-radius: var(--radius-md);
+}
+
+/* ── historial-asistencia table ── */
+#tabla-historial {
+  min-width: 900px;
+}
+
+/* ── Modal Responsive ── */
+@media (max-width: 576px) {
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+
+  .modal-content {
+    border-radius: var(--radius-md) !important;
+  }
+
+  .modal-body {
+    padding: 1.25rem 1rem !important;
+  }
+
+  .modal-footer {
+    padding: 0.75rem 1rem !important;
+    gap: 0.5rem;
+  }
+
+  .modal-footer .btn {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* ── Admin Panel Grid ── */
+@media (max-width: 576px) {
+  .row.g-3 > [class*="col-md"] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+/* ── Historial Table Action Buttons ── */
+@media (max-width: 768px) {
+  .btn-sm.btn-ajuste-manual,
+  .btn-sm.btn-outline-danger {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.5rem;
+  }
+}
+
+/* ── Toast container mobile ── */
+@media (max-width: 576px) {
+  .toast-container {
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    top: 0.5rem !important;
+  }
+
+  .toast {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ── tabGeneral form (new employee inline form) ── */
+@media (max-width: 768px) {
+  #form-nuevo-empleado .row > div {
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* ── Error Page ── */
+@media (max-width: 576px) {
+  .error-card {
+    padding: 2rem 1.25rem;
+  }
+
+  .error-icon-box {
+    width: 72px;
+    height: 72px;
+    font-size: 2.2rem;
+  }
+}
+
+/* ── Utility: Scrollbar styling for table wrappers ── */
+.alba-table-container::-webkit-scrollbar {
+  height: 5px;
+}
+
+.alba-table-container::-webkit-scrollbar-track {
+  background: var(--slate-100);
+}
+
+.alba-table-container::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+/* ── Badges max-width on mobile ── */
+@media (max-width: 576px) {
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.3em 0.55em;
+  }
+}
+
+/* ── editarempleado / registro card max-width ── */
+.edit-card-wrapper {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+@media (max-width: 576px) {
+  .edit-card-wrapper {
+    padding: 0 0.25rem;
+  }
+}
+
+/* ── Warning estatus detail card ── */
+.card.border-warning-subtle {
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 576px) {
+  .card.border-warning-subtle .row.g-2 > div {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+.error-page-body {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.error-card {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  max-width: 540px;
+  width: 100%;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.error-icon-box {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.icon-404 {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.icon-403 {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.icon-500 {
+  background: #CFFAFE;
+  color: #0891B2;
+}
+
+.error-status-badge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius-full);
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+/* ==========================================================================
+   LOGIN & REGISTER PAGE STYLES
+   ========================================================================== */
+.login-page-body, .register-card-body {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.login-card, .employee-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  max-width: 440px;
+  width: 100%;
+  padding: 2.5rem;
+}
+
+.brand-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.brand-header img {
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 3px solid var(--primary);
+  box-shadow: var(--shadow-glow-amber);
+  margin-bottom: 1rem;
+}
+
+.register-card {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  max-width: 720px;
+  width: 100%;
+  padding: 2.5rem;
+}
+
+.strength-meter {
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--slate-200);
+  transition: all 0.3s ease;
+}
+
+.req-list {
+  font-size: 0.82rem;
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.req-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--slate-500);
+  transition: color 0.2s ease;
+}
+
+.req-list li.valid {
+  color: #10B981;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   EMPLOYEE PROFILE & PANEL STYLES
+   ========================================================================== */
+.profile-header-card {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  border-radius: var(--radius-lg);
+  color: #FFFFFF;
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.profile-avatar-wrapper {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 4px solid var(--primary);
+  box-shadow: var(--shadow-glow-amber);
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.profile-avatar-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.qr-card-container {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-md);
+  padding: 2rem;
+  text-align: center;
+}
+
+.qr-image-frame {
+  background: #FFFFFF;
+  padding: 1rem;
+  border-radius: 16px;
+  display: inline-block;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--slate-200);
+}
+
+/* ==========================================================================
+   LANDING / INDEX STYLES
+   ========================================================================== */
+.hero-banner {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+  color: #FFFFFF;
+  padding: 5rem 1.5rem;
+  border-radius: 0 0 30px 30px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.hero-banner::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0) 70%);
+  border-radius: 50%;
+}
+
+.feature-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--card-border);
+  padding: 2.5rem 2rem;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-normal);
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.section-title {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 2.5rem;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 50px;
+  height: 4px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+.footer-alba {
+  background: var(--slate-900);
+  color: var(--slate-400);
+  padding: 3rem 0 1.5rem 0;
+  border-top: 1px solid var(--slate-800);
+}
+
+/* ==========================================================================
+   SCANNER PAGE STYLES
+   ========================================================================== */
+.scanner-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-lg);
+  padding: 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+#video-container {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto 1.5rem auto;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 3px solid var(--primary);
+  box-shadow: var(--shadow-glow-amber);
+  background: #000000;
+  display: none;
+}
+
+#video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.scanner-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  border: 2px dashed rgba(245, 158, 11, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+#canvas {
+  display: none;
+}
+
+#resultado {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+#action-buttons {
+  display: none;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+
