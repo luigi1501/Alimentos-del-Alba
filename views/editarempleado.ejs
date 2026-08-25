@@ -13,12 +13,25 @@
 
     <!-- Header Navbar -->
     <header class="alba-navbar">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2">
             <a href="/admin" class="navbar-brand">
                 <img src="/images/logo2.jpg" alt="Logo Alba" class="brand-logo">
                 <span>Alimentos del Alba <span class="badge badge-alba-amber ms-2">Admin</span></span>
             </a>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Botón Notificación Pendientes -->
+                <a href="/tabGeneral?filter=pendientes" class="btn btn-sm position-relative d-inline-flex align-items-center gap-2 <%= (locals.pendientesCount && locals.pendientesCount > 0) ? 'btn-alba-warning-glow' : 'btn-outline-secondary text-light' %>" title="Usuarios pendientes por asignar jornada / activación">
+                    <i class="bi bi-bell-fill <%= (locals.pendientesCount && locals.pendientesCount > 0) ? 'text-warning pulse-icon' : '' %>"></i>
+                    <span class="d-none d-sm-inline font-heading">Pendientes</span>
+                    <% if (locals.pendientesCount && locals.pendientesCount > 0) { %>
+                        <span class="badge rounded-pill bg-danger shadow-sm badge-pulse">
+                            <%= locals.pendientesCount %>
+                        </span>
+                    <% } else { %>
+                        <span class="badge bg-secondary rounded-pill" style="font-size: 0.7rem;">0</span>
+                    <% } %>
+                </a>
+
                 <a href="/tabGeneral" class="btn btn-sm btn-alba-secondary">
                     <i class="bi bi-arrow-left me-1"></i> Volver a la Tabla
                 </a>

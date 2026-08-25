@@ -51,13 +51,15 @@ const getAdmin = async (req, res) => {
         const empleadoMasResponsable = await db.getEmpleadoMasResponsable();
 
         const totalEmpleados = empleados.length;
-        const qrHabilitados = empleados.filter(e => e.tipo_jornada && e.tipo_jornada.trim() !== '').length;
+        const qrHabilitados = empleados.filter(e => e.tipo_jornada && e.tipo_jornada.trim() !== '' && e.tipo_jornada !== 'Pendiente' && e.estatus_empleado === 'Activo').length;
+        const pendientesJornada = totalEmpleados - qrHabilitados;
         const totalMarcajes = historial.length;
 
         res.render('admin', {
             stats: {
                 totalEmpleados,
                 qrHabilitados,
+                pendientesJornada,
                 totalMarcajes
             },
             empleadoMasResponsable,
@@ -67,7 +69,7 @@ const getAdmin = async (req, res) => {
         delete req.session.message;
     } catch (error) {
         console.error('Error al cargar panel admin:', error);
-        res.render('admin', { stats: { totalEmpleados: 0, qrHabilitados: 0, totalMarcajes: 0 }, message: null });
+        res.render('admin', { stats: { totalEmpleados: 0, qrHabilitados: 0, pendientesJornada: 0, totalMarcajes: 0 }, message: null });
     }
 };
 
@@ -78,11 +80,12 @@ const getTabGeneral = async (req, res) => {
     try {
         const empleados = await db.getempleados();
         const totalEmpleados = empleados.length;
-        const qrHabilitados = empleados.filter(e => e.tipo_jornada && e.tipo_jornada.trim() !== '').length;
+        const qrHabilitados = empleados.filter(e => e.tipo_jornada && e.tipo_jornada.trim() !== '' && e.tipo_jornada !== 'Pendiente' && e.estatus_empleado === 'Activo').length;
         const pendientesJornada = totalEmpleados - qrHabilitados;
 
         res.render('tabGeneral', {
             empleados,
+            filter: req.query.filter || null,
             stats: {
                 totalEmpleados,
                 qrHabilitados,

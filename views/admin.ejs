@@ -13,13 +13,26 @@
 
     <!-- Header Navbar -->
     <header class="alba-navbar">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2">
             <a href="/admin" class="navbar-brand">
                 <img src="/images/logo2.jpg" alt="Logo Alba" class="brand-logo">
                 <span>Alimentos del Alba <span class="badge badge-alba-amber ms-2">Admin</span></span>
             </a>
-            <div class="d-flex align-items-center gap-3">
-                <span class="text-light small d-none d-md-inline"><i class="bi bi-shield-check text-warning me-1"></i> Sesión Administrador</span>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Botón / Notificación de Usuarios y Marcajes Pendientes -->
+                <a href="<%= locals.pendientesTargetUrl || '/tabGeneral?filter=pendientes' %>" class="btn btn-sm position-relative d-inline-flex align-items-center gap-2 <%= (locals.pendientesCount && locals.pendientesCount > 0) ? 'btn-alba-warning-glow' : 'btn-outline-secondary text-light' %>" title="Atender usuarios o marcajes pendientes">
+                    <i class="bi bi-bell-fill <%= (locals.pendientesCount && locals.pendientesCount > 0) ? 'text-warning pulse-icon' : '' %>"></i>
+                    <span class="d-none d-sm-inline font-heading">Pendientes</span>
+                    <% if (locals.pendientesCount && locals.pendientesCount > 0) { %>
+                        <span class="badge rounded-pill bg-danger shadow-sm badge-pulse">
+                            <%= locals.pendientesCount %>
+                        </span>
+                    <% } else { %>
+                        <span class="badge bg-secondary rounded-pill" style="font-size: 0.7rem;">0</span>
+                    <% } %>
+                </a>
+
+                <span class="text-light small d-none d-lg-inline"><i class="bi bi-shield-check text-warning me-1"></i> Sesión Administrador</span>
                 <a href="/auth/logout" class="btn btn-sm btn-alba-danger">
                     <i class="bi bi-box-arrow-right me-1"></i> Salir
                 </a>
@@ -59,6 +72,44 @@
                 </div>
             </div>
         </div>
+
+        <!-- 🔔 ALERTA DE NOTIFICACIÓN — USUARIOS Y MARCAJES PENDIENTES -->
+        <% if (locals.pendientesCount && locals.pendientesCount > 0) { %>
+            <div class="alba-card border-amber-highlight p-4 mb-4 shadow-lg bg-gradient-amber-subtle">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="p-3 bg-warning text-dark rounded-circle fs-3 flex-shrink-0 shadow-sm animate-pulse-amber">
+                            <i class="bi bi-bell-fill text-dark"></i>
+                        </div>
+                        <div>
+                            <div class="badge bg-danger text-white fw-bold px-3 py-1 mb-2 shadow-sm">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i> Requiere Atención Administrativa
+                            </div>
+                            <h3 class="h4 text-dark fw-bold mb-1">
+                                Tienes <%= locals.pendientesCount %> elemento(s) pendiente(s) por resolver
+                            </h3>
+                            <p class="text-secondary mb-0 small">
+                                <% if (locals.countAsistenciasPendientes && locals.countAsistenciasPendientes > 0) { %>
+                                    <span class="d-block text-danger fw-semibold">
+                                        <i class="bi bi-clock-history me-1"></i> <%= locals.countAsistenciasPendientes %> marcaje(s) de asistencia pendiente(s) por marcar salida.
+                                    </span>
+                                <% } %>
+                                <% if (locals.countEmpleadosPendientes && locals.countEmpleadosPendientes > 0) { %>
+                                    <span class="d-block text-warning-emphasis fw-semibold">
+                                        <i class="bi bi-person-exclamation me-1"></i> <%= locals.countEmpleadosPendientes %> empleado(s) registrado(s) sin jornada asignada o inactivo(s).
+                                    </span>
+                                <% } %>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-md-end flex-shrink-0">
+                        <a href="<%= locals.pendientesTargetUrl || '/tabGeneral?filter=pendientes' %>" class="btn btn-alba-primary shadow-glow">
+                            <i class="bi bi-arrow-right-circle-fill me-1"></i> Atender Pendientes (<%= locals.pendientesCount %>)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        <% } %>
 
         <!-- 🏆 CUADRO DE HONOR — EMPLEADO MÁS RESPONSABLE -->
         <% if (locals.empleadoMasResponsable) { %>

@@ -68,64 +68,62 @@
             </div>
         <% } %>
 
-        <!-- History Table -->
-        <div class="alba-table-container">
-            <div class="table-responsive">
-                <table class="alba-table" id="tabla-historial-propio">
-                    <thead>
-                        <tr>
-                            <th># Registro</th>
-                            <th>Fecha</th>
-                            <th>Hora de Entrada</th>
-                            <th>Hora de Salida</th>
-                            <th>Estado de Jornada</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (historial && historial.length > 0) { %>
-                            <% historial.forEach(registro => { %>
-                                <tr>
-                                    <td class="fw-bold text-muted">#<%= registro.id_asistencia %></td>
-                                    <td>
-                                        <i class="bi bi-calendar3 me-1 text-primary"></i>
-                                        <strong class="text-dark"><%= registro.fechaFormatted || registro.fecha %></strong>
-                                    </td>
-                                    <td>
-                                        <span class="text-success fw-semibold">
-                                            <i class="bi bi-box-arrow-in-right me-1"></i><%= registro.horaEntradaFormatted || registro.hora_entrada %>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <% if (registro.hora_salida && registro.hora_salida !== 'N/A') { %>
-                                            <span class="text-primary fw-semibold">
-                                                <i class="bi bi-box-arrow-left me-1"></i><%= registro.horaSalidaFormatted || registro.hora_salida %>
-                                            </span>
-                                        <% } else { %>
-                                            <span class="text-warning fw-semibold">
-                                                <i class="bi bi-clock-history me-1"></i> Pendiente
-                                            </span>
-                                        <% } %>
-                                    </td>
-                                    <td>
-                                        <% if (registro.hora_salida && registro.hora_salida !== 'N/A') { %>
-                                            <span class="badge badge-alba-emerald"><i class="bi bi-check-circle-fill me-1"></i> Jornada Completa</span>
-                                        <% } else { %>
-                                            <span class="badge badge-alba-amber"><i class="bi bi-hourglass-split me-1"></i> En Jornada</span>
-                                        <% } %>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
+        <!-- History Table Container -->
+        <div class="alba-table-container shadow-md">
+            <table class="alba-table" id="tabla-historial-propio">
+                <thead>
+                    <tr>
+                        <th class="text-nowrap"># Registro</th>
+                        <th class="text-nowrap">Fecha</th>
+                        <th class="text-nowrap">Hora de Entrada</th>
+                        <th class="text-nowrap">Hora de Salida</th>
+                        <th class="text-nowrap">Estado de Jornada</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (historial && historial.length > 0) { %>
+                        <% historial.forEach(registro => { %>
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
-                                    <i class="bi bi-inbox fs-1 d-block mb-2 text-warning"></i>
-                                    Aún no tienes registros de asistencia en tu historial.
+                                <td class="fw-bold text-muted text-nowrap">#<%= registro.id_asistencia %></td>
+                                <td class="text-nowrap">
+                                    <i class="bi bi-calendar3 me-1 text-primary"></i>
+                                    <strong class="text-dark"><%= registro.fechaFormatted || registro.fecha %></strong>
+                                </td>
+                                <td class="text-nowrap">
+                                    <span class="text-success fw-semibold">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i><%= registro.horaEntradaFormatted || registro.hora_entrada %>
+                                    </span>
+                                </td>
+                                <td class="text-nowrap">
+                                    <% if (registro.hora_salida && registro.hora_salida !== 'N/A') { %>
+                                        <span class="text-primary fw-semibold">
+                                            <i class="bi bi-box-arrow-left me-1"></i><%= registro.horaSalidaFormatted || registro.hora_salida %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="text-warning fw-semibold">
+                                            <i class="bi bi-clock-history me-1"></i> Pendiente
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td class="text-nowrap">
+                                    <% if (registro.hora_salida && registro.hora_salida !== 'N/A') { %>
+                                        <span class="badge badge-alba-emerald"><i class="bi bi-check-circle-fill me-1"></i> Jornada Completa</span>
+                                    <% } else { %>
+                                        <span class="badge badge-alba-amber"><i class="bi bi-hourglass-split me-1"></i> En Jornada</span>
+                                    <% } %>
                                 </td>
                             </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 text-warning"></i>
+                                Aún no tienes registros de asistencia en tu historial.
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
 
     </main>

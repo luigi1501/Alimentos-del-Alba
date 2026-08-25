@@ -13,12 +13,25 @@
 
     <!-- Header Navbar -->
     <header class="alba-navbar">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2">
             <a href="/admin" class="navbar-brand">
                 <img src="/images/logo2.jpg" alt="Logo Alba" class="brand-logo">
                 <span>Alimentos del Alba <span class="badge badge-alba-amber ms-2">Admin</span></span>
             </a>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Botón Notificación Pendientes -->
+                <a href="/tabGeneral?filter=pendientes" class="btn btn-sm position-relative d-inline-flex align-items-center gap-2 <%= (locals.pendientesCount && locals.pendientesCount > 0) ? 'btn-alba-warning-glow' : 'btn-outline-secondary text-light' %>" title="Usuarios pendientes por asignar jornada / activación">
+                    <i class="bi bi-bell-fill <%= (locals.pendientesCount && locals.pendientesCount > 0) ? 'text-warning pulse-icon' : '' %>"></i>
+                    <span class="d-none d-sm-inline font-heading">Pendientes</span>
+                    <% if (locals.pendientesCount && locals.pendientesCount > 0) { %>
+                        <span class="badge rounded-pill bg-danger shadow-sm badge-pulse">
+                            <%= locals.pendientesCount %>
+                        </span>
+                    <% } else { %>
+                        <span class="badge bg-secondary rounded-pill" style="font-size: 0.7rem;">0</span>
+                    <% } %>
+                </a>
+
                 <a href="/admin" class="btn btn-sm btn-alba-secondary">
                     <i class="bi bi-house me-1"></i> Menú Admin
                 </a>
@@ -46,112 +59,132 @@
 
     <main class="container my-4">
         
-        <!-- Header Banner -->
+        <!-- Header Banner & Stats Badges -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
             <div>
                 <h1 class="h3 fw-bold mb-1"><i class="bi bi-people text-warning me-2"></i> Directorio de Empleados</h1>
                 <p class="text-muted mb-0">Gestión de personal y asignación de <strong>Tipo de Jornada</strong> para activación de código QR.</p>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex flex-wrap align-items-center gap-2">
                 <span class="badge badge-alba-amber fs-6 px-3 py-2" id="badge-count">
                     <i class="bi bi-person-fill me-1"></i> Total: <%= (empleados && empleados.length) ? empleados.length : 0 %>
                 </span>
                 <span class="badge badge-alba-emerald fs-6 px-3 py-2">
-                    <i class="bi bi-qr-code me-1"></i> <%= (locals.stats && locals.stats.qrHabilitados) ? locals.stats.qrHabilitados : 0 %> Con QR Activo
+                    <i class="bi bi-qr-code me-1"></i> <%= (locals.stats && locals.stats.qrHabilitados) ? locals.stats.qrHabilitados : 0 %> Activos
+                </span>
+                <% const countPendientes = (locals.stats && locals.stats.pendientesJornada !== undefined) ? locals.stats.pendientesJornada : (locals.pendientesCount || 0); %>
+                <span class="badge <%= countPendientes > 0 ? 'bg-danger text-white animate-pulse-badge' : 'bg-secondary text-white' %> fs-6 px-3 py-2" id="badge-pending">
+                    <i class="bi bi-bell-fill me-1"></i> <%= countPendientes %> Pendientes
                 </span>
             </div>
         </div>
 
         <!-- Toolbar & Filter -->
         <div class="alba-card p-3 mb-4">
-            <div class="row g-2 align-items-center">
-                <div class="col-md-8">
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-6 col-md-7">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
                         <input type="text" id="input-search" class="form-control border-start-0 ps-0" placeholder="Buscar por nombre, cédula, cargo, departamento o tipo de jornada...">
                     </div>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <a href="/auth/registro-empleado" class="btn btn-alba-emerald w-100 w-md-auto">
-                        <i class="bi bi-person-plus-fill me-1"></i> Registrar Empleado
+                <div class="col-lg-4 col-md-5 d-flex gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary flex-fill filter-btn active" data-filter="all">Todos</button>
+                    <button type="button" class="btn btn-sm btn-outline-success flex-fill filter-btn" data-filter="activos">Activos</button>
+                    <button type="button" class="btn btn-sm btn-outline-warning flex-fill filter-btn" data-filter="pendientes">
+                        ⚠️ Pendientes (<%= countPendientes %>)
+                    </button>
+                </div>
+                <div class="col-lg-2 col-md-12 text-lg-end">
+                    <a href="/auth/registro-empleado" class="btn btn-alba-emerald w-100">
+                        <i class="bi bi-person-plus-fill me-1"></i> Nuevo
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Employee Table -->
-        <div class="alba-table-container">
-            <div class="table-responsive">
-                <table class="alba-table" id="tabla-general">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Empleado</th>
-                            <th>Usuario</th>
-                            <th>Cédula</th>
-                            <th>Cargo / Dpto</th>
-                            <th>Tipo de Jornada</th>
-                            <th>Estado QR</th>
-                            <th class="text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-general">
-                        <% if (empleados && empleados.length > 0) { %>
-                            <% empleados.forEach((empleado, index) => { %>
-                                <tr data-empleado-id="<%= empleado.id %>">
-                                    <td class="fw-bold text-muted"><%= index + 1 %></td>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="avatar-circle bg-light border d-flex align-items-center justify-content-center rounded-circle" style="width: 38px; height: 38px; font-weight: 700; color: var(--slate-700);">
+        <!-- Employee Table Container -->
+        <div class="alba-table-container shadow-md">
+            <table class="alba-table" id="tabla-general">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Empleado / Correo</th>
+                        <th>Usuario</th>
+                        <th>Cédula</th>
+                        <th>Cargo / Dpto</th>
+                        <th>Tipo de Jornada</th>
+                        <th>Estado QR</th>
+                        <th class="text-center" style="width: 140px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-general">
+                    <% if (empleados && empleados.length > 0) { %>
+                        <% empleados.forEach((empleado, index) => { %>
+                            <% const esPendiente = !empleado.tipo_jornada || empleado.tipo_jornada.trim() === '' || empleado.tipo_jornada === 'Pendiente' || (empleado.estatus_empleado && empleado.estatus_empleado !== 'Activo'); %>
+                            <tr data-empleado-id="<%= empleado.id %>" data-status="<%= esPendiente ? 'pendiente' : 'activo' %>" class="<%= esPendiente ? 'alba-tr-warning' : '' %>">
+                                <td class="fw-bold text-muted"><%= index + 1 %></td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-circle <%= esPendiente ? 'bg-amber-light text-amber border-amber' : 'bg-light text-slate-700' %> d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style="width: 40px; height: 40px; font-weight: 700;">
+                                            <% if (empleado.foto_perfil) { %>
+                                                <img src="<%= empleado.foto_perfil %>" alt="Avatar" class="rounded-circle w-100 h-100 object-fit-cover">
+                                            <% } else { %>
                                                 <%= empleado.nombre ? empleado.nombre.charAt(0).toUpperCase() : 'E' %>
-                                            </div>
-                                            <div>
-                                                <div class="fw-bold text-dark"><%= empleado.nombre %> <%= empleado.apellido || '' %></div>
-                                                <small class="text-muted"><%= empleado.correo || 'Sin correo' %></small>
-                                            </div>
+                                            <% } %>
                                         </div>
-                                    </td>
-                                    <td><code class="text-primary"><%= empleado.usuario %></code></td>
-                                    <td><span class="fw-semibold">V-<%= empleado.cedula %></span></td>
-                                    <td>
-                                        <div><span class="badge badge-alba-amber"><%= empleado.cargo || 'General' %></span></div>
-                                        <small class="text-muted"><%= empleado.departamento || 'Planta' %></small>
-                                    </td>
-                                    <td>
+                                        <div>
+                                            <div class="fw-bold text-dark"><%= empleado.nombre %> <%= empleado.apellido || '' %></div>
+                                            <small class="text-muted text-break" style="font-size: 0.8rem;"><%= empleado.correo || 'Sin correo' %></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><code class="text-primary fw-semibold"><%= empleado.usuario %></code></td>
+                                <td><span class="fw-semibold text-dark">V-<%= empleado.cedula %></span></td>
+                                <td>
+                                    <div><span class="badge badge-alba-amber"><%= empleado.cargo || 'General' %></span></div>
+                                    <small class="text-muted"><%= empleado.departamento || 'Planta' %></small>
+                                </td>
+                                <td>
+                                    <% if (!esPendiente) { %>
                                         <span class="badge badge-alba-slate fw-medium">
-                                            <i class="bi bi-clock me-1"></i><%= empleado.tipo_jornada || 'Diurna (8:00 AM - 5:00 PM)' %>
+                                            <i class="bi bi-clock me-1"></i><%= empleado.tipo_jornada %>
                                         </span>
-                                    </td>
-                                    <td>
-                                        <% if (empleado.tipo_jornada && empleado.tipo_jornada.trim() !== '') { %>
-                                            <span class="badge badge-alba-emerald"><i class="bi bi-qr-code-scan me-1"></i> QR Habilitado</span>
-                                        <% } else { %>
-                                            <span class="badge badge-alba-amber"><i class="bi bi-exclamation-triangle me-1"></i> Pendiente</span>
-                                        <% } %>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="/editempleado/<%= empleado.id %>" class="btn btn-outline-primary" title="Editar / Asignar Jornada">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </a>
-                                            <button class="btn btn-outline-danger btn-eliminar" data-id="<%= empleado.id %>" title="Eliminar">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
-                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                    No hay empleados registrados actualmente.
+                                    <% } else { %>
+                                        <span class="badge bg-warning text-dark fw-bold">
+                                            <i class="bi bi-exclamation-triangle me-1"></i> Sin Jornada Asignada
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (!esPendiente) { %>
+                                        <span class="badge badge-alba-emerald"><i class="bi bi-qr-code-scan me-1"></i> QR Habilitado</span>
+                                    <% } else { %>
+                                        <span class="badge bg-danger text-white badge-pulse"><i class="bi bi-bell-fill me-1"></i> Pendiente Activación</span>
+                                    <% } %>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/editempleado/<%= empleado.id %>" class="btn <%= esPendiente ? 'btn-amber-action' : 'btn-outline-primary' %>" title="<%= esPendiente ? '¡Asignar Jornada para Activar QR!' : 'Editar Empleado' %>">
+                                            <i class="bi bi-pencil-square me-1"></i><%= esPendiente ? 'Asignar' : '' %>
+                                        </a>
+                                        <button class="btn btn-outline-danger btn-eliminar" data-id="<%= empleado.id %>" title="Eliminar Empleado">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 text-warning"></i>
+                                No hay empleados registrados actualmente.
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
 
     </main>
@@ -161,7 +194,42 @@
         document.addEventListener('DOMContentLoaded', () => {
             const inputSearch = document.getElementById('input-search');
             const tbody = document.getElementById('tbody-general');
-            const rows = tbody.querySelectorAll('tr');
+            const rows = tbody.querySelectorAll('tr[data-empleado-id]');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            let currentFilter = 'all';
+
+            // Comprobar parámetro en la URL (?filter=pendientes)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('filter') === 'pendientes') {
+                currentFilter = 'pendientes';
+                filterBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.filter === 'pendientes');
+                });
+            }
+
+            function applyFilter() {
+                const query = inputSearch ? inputSearch.value.toLowerCase().trim() : '';
+                rows.forEach(row => {
+                    const status = row.dataset.status;
+                    const text = row.textContent.toLowerCase();
+                    
+                    let matchesFilter = true;
+                    if (currentFilter === 'pendientes') {
+                        matchesFilter = (status === 'pendiente');
+                    } else if (currentFilter === 'activos') {
+                        matchesFilter = (status === 'activo');
+                    }
+
+                    const matchesSearch = text.includes(query);
+
+                    if (matchesFilter && matchesSearch) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
 
             // Toast Auto-Show
             const toastEl = document.getElementById('albaToast');
@@ -170,16 +238,23 @@
                 toast.show();
             }
 
-            // Búsqueda en tiempo real
+            // Evento búsqueda
             if (inputSearch) {
-                inputSearch.addEventListener('input', function() {
-                    const query = this.value.toLowerCase().trim();
-                    rows.forEach(row => {
-                        const text = row.textContent.toLowerCase();
-                        row.style.display = text.includes(query) ? '' : 'none';
-                    });
-                });
+                inputSearch.addEventListener('input', applyFilter);
             }
+
+            // Botones de filtro rápido
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    applyFilter();
+                });
+            });
+
+            // Aplicar filtro inicial
+            applyFilter();
 
             // Eliminación mediante POST
             const botonesEliminar = document.querySelectorAll('.btn-eliminar');

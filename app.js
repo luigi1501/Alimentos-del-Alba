@@ -49,13 +49,64 @@ app.use(session({
 }));
 
 // ── Variables locales de sesión ────────────────────────────────
-app.use((req, res, next) => {
-    res.locals.userId = req.session.userId;
-    res.locals.isAdmin = req.session.isAdmin;
-    res.locals.nombreEmpleado = req.session.nombreEmpleado;
-    res.locals.empleadoApellido = req.session.empleadoApellido;
-    res.locals.message = req.session.message;
-    delete req.session.message;
+app.use(async (req, res, next) => {
+    res.locals.userId = req.session ? req.session.userId : null;
+    res.locals.isAdmin = req.session ? req.session.isAdmin : null;
+    res.locals.nombreEmpleado = req.session ? req.session.nombreEmpleado : null;
+    res.locals.empleadoApellido = req.session ? req.session.empleadoApellido : null;
+    res.locals.message = req.session ? req.session.message : null;
+    if (req.session) {
+        delete req.session.message;
+    }
+
+    if (req.session && req.session.isAdmin) {
+        try {
+            const dbModels = require('./db/models');
+            const empleados = await dbModels.getempleados();
+            const historial = await dbModels.getHistorialAsistencia();
+
+            // 1. Empleados pendientes por asignar jornada o activación
+            const empleadosPendientes = (empleados || []).filter(e => 
+                !e.tipo_jornada || 
+                e.tipo_jornada.trim() === '' || 
+                e.tipo_jornada === 'Pendiente' || 
+                e.estatus_empleado !== 'Activo'
+            );
+
+            // 2. Marcajes de asistencia pendientes por salida (hora_salida es null/N/A)
+            const asistenciasPendientes = (historial || []).filter(h => 
+                !h.hora_salida || h.hora_salida === 'N/A'
+            );
+
+            const countEmpleadosPendientes = empleadosPendientes.length;
+            const countAsistenciasPendientes = asistenciasPendientes.length;
+            const totalPendientes = countEmpleadosPendientes + countAsistenciasPendientes;
+
+            res.locals.pendientesCount = totalPendientes;
+            res.locals.countEmpleadosPendientes = countEmpleadosPendientes;
+            res.locals.countAsistenciasPendientes = countAsistenciasPendientes;
+            res.locals.empleadosPendientesList = empleadosPendientes;
+            res.locals.asistenciasPendientesList = asistenciasPendientes;
+
+            if (countAsistenciasPendientes > 0 && countEmpleadosPendientes === 0) {
+                res.locals.pendientesTargetUrl = '/historial-asistencia?filter=pendientes';
+            } else {
+                res.locals.pendientesTargetUrl = '/tabGeneral?filter=pendientes';
+            }
+        } catch (err) {
+            console.error('Error calculando elementos pendientes:', err);
+            res.locals.pendientesCount = 0;
+            res.locals.countEmpleadosPendientes = 0;
+            res.locals.countAsistenciasPendientes = 0;
+            res.locals.pendientesTargetUrl = '/tabGeneral?filter=pendientes';
+        }
+    } else {
+        res.locals.pendientesCount = 0;
+        res.locals.countEmpleadosPendientes = 0;
+        res.locals.countAsistenciasPendientes = 0;
+        res.locals.pendientesTargetUrl = '/tabGeneral?filter=pendientes';
+    }
+
     next();
 });
 

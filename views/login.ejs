@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Administrativo — Alimentos del Alba</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/stylesheets/main-theme.css">
@@ -12,52 +16,66 @@
 <body class="login-page-body">
 
     <div class="login-card">
+
+        <!-- Mode Switcher (Empleado vs Admin) -->
+        <div class="auth-segmented-control">
+            <a href="/auth/login-empleado">
+                <i class="bi bi-person-circle me-1"></i> Empleado
+            </a>
+            <a href="/login" class="active admin-active">
+                <i class="bi bi-shield-lock-fill me-1"></i> Administrador
+            </a>
+        </div>
+
         <div class="brand-header">
             <img src="/images/logo2.jpg" alt="Alimentos del Alba Logo">
-            <h2 class="h3 fw-bold text-dark mb-1">Panel de Control Admin</h2>
-            <p class="text-muted small">Alimentos del Alba C.A.</p>
+            <h1 class="h4 fw-bold text-dark mb-1">Panel de Control Admin</h1>
+            <p class="text-muted small mb-0">Alimentos del Alba C.A.</p>
         </div>
 
         <% if (locals.logout === 'success') { %>
             <div class="alert alert-success d-flex align-items-center gap-2 mb-4" role="alert">
                 <i class="bi bi-check-circle-fill flex-shrink-0"></i>
-                <div>Has cerrado sesión administrativamente de manera exitosa. ¡Hasta pronto!</div>
+                <div class="small">Has cerrado sesión administrativamente de manera exitosa.</div>
             </div>
         <% } else if (locals.error === 'incorrectCredentials') { %>
             <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
                 <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
-                <div>Credenciales incorrectas. Verifica tu usuario o contraseña.</div>
+                <div class="small">Credenciales incorrectas. Verifica tu usuario o contraseña.</div>
             </div>
         <% } else if (locals.error === 'tooManyAttempts') { %>
             <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" role="alert">
                 <i class="bi bi-shield-exclamation flex-shrink-0"></i>
-                <div>Demasiados intentos fallidos. Reintenta en 15 minutos.</div>
+                <div class="small">Demasiados intentos fallidos. Reintenta en 15 minutos.</div>
             </div>
         <% } %>
 
         <form action="/login" method="POST">
             <div class="mb-3">
-                <label for="user" class="alba-label">Nombre de Usuario</label>
+                <label for="user" class="alba-label">Usuario Administrador</label>
                 <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
-                    <input type="text" id="user" name="user" class="form-control border-start-0 ps-0" placeholder="Ej. admin" required autofocus>
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-person-fill text-muted"></i></span>
+                    <input type="text" id="user" name="user" class="form-control border-start-0 ps-0 alba-input" placeholder="Ej. admin" required autofocus>
                 </div>
             </div>
 
             <div class="mb-4">
                 <label for="password" class="alba-label">Contraseña</label>
                 <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
-                    <input type="password" id="password" name="password" class="form-control border-start-0 ps-0" placeholder="••••••••" required>
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock-fill text-muted"></i></span>
+                    <input type="password" id="password" name="password" class="form-control border-start-0 border-end-0 ps-0 alba-input" placeholder="••••••••" required>
+                    <button type="button" class="btn btn-outline-secondary border-start-0 toggle-pass" data-target="password" title="Mostrar u ocultar contraseña">
+                        <i class="bi bi-eye"></i>
+                    </button>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-alba-primary w-100 py-2 mb-3">
-                <i class="bi bi-box-arrow-in-right"></i> Acceder al Sistema
+            <button type="submit" class="btn btn-alba-primary w-100 py-2.5 mb-3 shadow-glow fs-6">
+                <i class="bi bi-shield-check me-1"></i> Acceder al Panel Admin
             </button>
 
-            <div class="text-center mt-3">
-                <a href="/" class="text-decoration-none text-muted small hover-primary">
+            <div class="text-center mt-3 pt-3 border-top">
+                <a href="/" class="text-decoration-none text-muted small hover-primary d-inline-flex align-items-center gap-1">
                     <i class="bi bi-arrow-left"></i> Volver a la página principal
                 </a>
             </div>
@@ -65,5 +83,23 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.toggle-pass').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const input = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.className = 'bi bi-eye-slash';
+                    } else {
+                        input.type = 'password';
+                        icon.className = 'bi bi-eye';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

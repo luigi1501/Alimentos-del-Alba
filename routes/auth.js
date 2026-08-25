@@ -14,6 +14,8 @@ router.post('/login-empleado', loginLimiter, authController.postLoginEmpleado);
 // ── Registro ───────────────────────────────────────────────────
 router.get('/registro-empleado', authController.getRegistroEmpleado);
 router.post('/registro-empleado', authController.postRegistroEmpleado);
+router.get('/verificar-usuario', authController.verificarUsuarioDisponibilidad);
+router.get('/verificar-correo', authController.verificarCorreoDisponibilidad);
 
 // ── Logout ─────────────────────────────────────────────────────
 router.get('/logout', authController.getLogout);

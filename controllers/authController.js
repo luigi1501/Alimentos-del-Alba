@@ -1,6 +1,7 @@
 const {
     registrarEmpleado,
     obtenerEmpleadoPorUsuario,
+    obtenerEmpleadoPorCorreo,
     verificarPassword,
     getEmpleadoPorId,
     getHistorialAsistenciaPorEmpleado,
@@ -87,7 +88,7 @@ const postRegistroEmpleado = async (req, res) => {
 
     const jornadaFinal = (tipo_jornada && tipo_jornada.trim() !== '') 
         ? tipo_jornada.trim() 
-        : 'Lunes a Viernes (8:00 AM - 5:00 PM)';
+        : '';
     const estatusFinal = estatus_empleado || 'Activo';
 
     try {
@@ -188,11 +189,64 @@ const getHistorialPropio = async (req, res) => {
     }
 };
 
+// GET /auth/verificar-usuario
+// ─────────────────────────────────────────────
+const verificarUsuarioDisponibilidad = async (req, res) => {
+    try {
+        const usuarioInput = req.query.usuario ? req.query.usuario.trim() : '';
+        if (!usuarioInput) {
+            return res.json({ available: false, message: 'Ingresa un nombre de usuario.' });
+        }
+
+        if (usuarioInput.toLowerCase() === 'admin') {
+            return res.json({ available: false, message: 'El nombre de usuario "admin" está reservado para el sistema.' });
+        }
+
+        const empleadoExistente = await obtenerEmpleadoPorUsuario(usuarioInput);
+        if (empleadoExistente) {
+            return res.json({ available: false, message: 'Este nombre de usuario ya está registrado por otro empleado.' });
+        }
+
+        return res.json({ available: true, message: '¡Genial! Este nombre de usuario está disponible.' });
+    } catch (error) {
+        console.error('Error verificando disponibilidad de usuario:', error);
+        return res.status(500).json({ available: false, message: 'Error al comprobar disponibilidad.' });
+    }
+};
+
+// GET /auth/verificar-correo
+// ─────────────────────────────────────────────
+const verificarCorreoDisponibilidad = async (req, res) => {
+    try {
+        const correoInput = req.query.correo ? req.query.correo.trim() : '';
+        if (!correoInput) {
+            return res.json({ available: false, message: 'Ingresa un correo electrónico.' });
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(correoInput)) {
+            return res.json({ available: false, message: 'Formato de correo electrónico inválido.' });
+        }
+
+        const empleadoExistente = await obtenerEmpleadoPorCorreo(correoInput);
+        if (empleadoExistente) {
+            return res.json({ available: false, message: 'Este correo electrónico ya está registrado por otro empleado.' });
+        }
+
+        return res.json({ available: true, message: '¡Genial! Este correo electrónico está disponible.' });
+    } catch (error) {
+        console.error('Error verificando disponibilidad de correo:', error);
+        return res.status(500).json({ available: false, message: 'Error al comprobar disponibilidad.' });
+    }
+};
+
 module.exports = {
     getLoginEmpleado,
     postLoginEmpleado,
     getRegistroEmpleado,
     postRegistroEmpleado,
+    verificarUsuarioDisponibilidad,
+    verificarCorreoDisponibilidad,
     getLogout,
     getPanelEmpleado,
     getHistorialPropio,

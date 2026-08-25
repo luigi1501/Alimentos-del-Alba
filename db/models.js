@@ -39,7 +39,7 @@ const formatearFilasAsistencia = (rows) =>
 // ─────────────────────────────────────────────────────────────
 module.exports = {
 
-    async registrarEmpleado(usuario, password, nombre, apellido, cedula, cargo, departamento, telefono, correo, tipo_jornada = 'Lunes a Viernes (8:00 AM - 5:00 PM)', estatus_empleado = 'Activo', estatus_desde = null, estatus_hasta = null, estatus_observacion = null) {
+    async registrarEmpleado(usuario, password, nombre, apellido, cedula, cargo, departamento, telefono, correo, tipo_jornada = '', estatus_empleado = 'Activo', estatus_desde = null, estatus_hasta = null, estatus_observacion = null) {
         try {
             const empleadoExistente = await new Promise((resolve, reject) => {
                 db.get(querys.obtenerEmpleadoPorCedula, [cedula], (err, row) => {
@@ -54,7 +54,7 @@ module.exports = {
 
             const hashedPassword = await bcrypt.hash(password, saltRounds);
             const qr_code = `QR-${cedula}-${Date.now()}`;
-            const jornadaFinal = tipo_jornada || 'Lunes a Viernes (8:00 AM - 5:00 PM)';
+            const jornadaFinal = (tipo_jornada && tipo_jornada.trim() !== '') ? tipo_jornada.trim() : '';
             const estatusFinal = estatus_empleado || 'Activo';
 
             return new Promise((resolve, reject) => {
@@ -81,6 +81,15 @@ module.exports = {
             db.get(querys.getEmpleadoPorUsuario, [usuario], (err, row) => {
                 if (err) return reject(err);
                 resolve(row);
+            });
+        });
+    },
+
+    async obtenerEmpleadoPorCorreo(correo) {
+        return new Promise((resolve, reject) => {
+            db.get('SELECT * FROM empleados WHERE LOWER(correo) = LOWER(?)', [correo], (err, row) => {
+                if (err) return reject(err);
+                resolve(row || null);
             });
         });
     },
@@ -432,13 +441,20 @@ module.exports = {
                     COALESCE(e.estatus_empleado, 'Activo') AS estatus_empleado,
                     COUNT(ha.id_asistencia) AS total_asistencias,
                     SUM(CASE WHEN ha.hora_salida IS NOT NULL THEN 1 ELSE 0 END) AS salidas_marcadas,
-                    SUM(CASE WHEN ha.salida_manual = 0 AND ha.hora_salida IS NOT NULL THEN 1 ELSE 0 END) AS marcajes_perfectos
+                    SUM(CASE WHEN ha.salida_manual = 0 AND ha.hora_salida IS NOT NULL THEN 1 ELSE 0 END) AS marcajes_perfectos,
+                    SUM(CASE WHEN ha.hora_salida IS NULL THEN 1 ELSE 0 END) AS marcajes_pendientes,
+                    MIN(ha.hora_entrada) AS primera_hora_entrada
                 FROM empleados e
                 LEFT JOIN historial_asistencia ha ON e.id = ha.empleado_id
                 WHERE COALESCE(e.estatus_empleado, 'Activo') = 'Activo'
                 GROUP BY e.id
-                HAVING total_asistencias > 0
-                ORDER BY marcajes_perfectos DESC, total_asistencias DESC, e.nombre ASC
+                HAVING marcajes_perfectos > 0 OR salidas_marcadas > 0
+                ORDER BY 
+                    marcajes_perfectos DESC, 
+                    salidas_marcadas DESC,
+                    marcajes_pendientes ASC,
+                    primera_hora_entrada ASC,
+                    e.nombre ASC
                 LIMIT 1
             `;
             db.get(sql, [], (err, row) => {

@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Empleado — Alimentos del Alba</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/stylesheets/main-theme.css">
@@ -12,225 +16,220 @@
 <body class="register-card-body">
 
     <div class="register-card">
-        <div class="text-center mb-4">
-            <img src="/images/logo2.jpg" alt="Logo Alba" class="rounded-3 mb-2" style="width: 60px; height: 60px; object-fit: cover; border: 2px solid var(--primary);">
-            <h1 class="h3 fw-bold text-dark mb-1">Registro de Empleado</h1>
-            <p class="text-muted small">Crea tu cuenta de acceso a la plataforma corporativa</p>
+        <div class="brand-header text-center mb-4">
+            <img src="/images/logo2.jpg" alt="Logo Alba">
+            <h1 class="h3 fw-bold text-dark mb-1">Registro de Nuevo Empleado</h1>
+            <p class="text-muted small">Crea tu cuenta de acceso a la plataforma corporativa de Alimentos del Alba</p>
         </div>
 
         <!-- Alertas de Error -->
         <% if (error === 'passwordMismatch') { %>
             <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
-                <i class="bi bi-shield-x-fill fs-5"></i>
-                <div>Las contraseñas no coinciden. Por favor, asegúrate de ingresarlas exactamente iguales.</div>
+                <i class="bi bi-shield-x-fill fs-5 flex-shrink-0"></i>
+                <div class="small">Las contraseñas no coinciden. Por favor, asegúrate de ingresarlas exactamente iguales.</div>
             </div>
         <% } else if (error === 'missingFields') { %>
             <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
-                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-                <div>Por favor, completa todos los campos requeridos del formulario.</div>
+                <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0"></i>
+                <div class="small">Por favor, completa todos los campos requeridos del formulario.</div>
             </div>
         <% } else if (error === 'usernameTaken') { %>
             <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
-                <i class="bi bi-person-x-fill fs-5"></i>
-                <div>El nombre de usuario ya está registrado. Elige otro.</div>
+                <i class="bi bi-person-x-fill fs-5 flex-shrink-0"></i>
+                <div class="small">El nombre de usuario ya está registrado. Elige otro.</div>
             </div>
         <% } else if (error === 'emailTaken') { %>
             <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
-                <i class="bi bi-envelope-at-fill fs-5"></i>
-                <div>El correo electrónico ya está registrado. Utiliza otro.</div>
+                <i class="bi bi-envelope-at-fill fs-5 flex-shrink-0"></i>
+                <div class="small">El correo electrónico ya está registrado. Utiliza otro.</div>
             </div>
         <% } else if (error === 'cedulaTaken') { %>
             <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
-                <i class="bi bi-card-heading fs-5"></i>
-                <div>La cédula ya está registrada en el sistema.</div>
+                <i class="bi bi-card-heading fs-5 flex-shrink-0"></i>
+                <div class="small">La cédula ya está registrada en el sistema.</div>
             </div>
         <% } else if (error === 'registrationFailed') { %>
             <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
-                <i class="bi bi-x-octagon-fill fs-5"></i>
-                <div>Error al registrar el empleado. Inténtalo de nuevo.</div>
+                <i class="bi bi-x-octagon-fill fs-5 flex-shrink-0"></i>
+                <div class="small">Error al registrar el empleado. Inténtalo de nuevo.</div>
             </div>
         <% } %>
 
         <form action="/auth/registro-empleado" method="POST" id="form-registro">
             
-            <div class="row g-3">
-                
-                <!-- Usuario -->
-                <div class="col-md-6">
-                    <label for="usuario" class="alba-label">Usuario *</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
-                        <input type="text" id="usuario" name="usuario" class="form-control border-start-0 ps-0" placeholder="Ej. mrodriguez" required autofocus>
+            <!-- 📌 SECCIÓN 1: DATOS PERSONALES -->
+            <div class="form-section-card">
+                <div class="form-section-title">
+                    <i class="bi bi-person-vcard text-emerald"></i> 1. Información Personal
+                </div>
+                <div class="row g-3">
+                    <!-- Nombre -->
+                    <div class="col-md-6">
+                        <label for="nombre" class="alba-label">Nombre *</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control alba-input" placeholder="Ej. Maria" required autofocus>
                     </div>
-                </div>
 
-                <!-- Correo -->
-                <div class="col-md-6">
-                    <label for="correo" class="alba-label">Correo Electrónico *</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
-                        <input type="email" id="correo" name="correo" class="form-control border-start-0 ps-0" placeholder="correo@alimentosdelalba.com" required>
+                    <!-- Apellido -->
+                    <div class="col-md-6">
+                        <label for="apellido" class="alba-label">Apellido *</label>
+                        <input type="text" id="apellido" name="apellido" class="form-control alba-input" placeholder="Ej. Rodriguez" required>
                     </div>
-                </div>
 
-                <!-- Nombre -->
-                <div class="col-md-6">
-                    <label for="nombre" class="alba-label">Nombre *</label>
-                    <input type="text" id="nombre" name="nombre" class="form-control alba-input" placeholder="Ej. Maria" required>
-                </div>
-
-                <!-- Apellido -->
-                <div class="col-md-6">
-                    <label for="apellido" class="alba-label">Apellido *</label>
-                    <input type="text" id="apellido" name="apellido" class="form-control alba-input" placeholder="Ej. Rodriguez" required>
-                </div>
-
-                <!-- Cédula -->
-                <div class="col-md-6">
-                    <label for="cedula" class="alba-label">Cédula de Identidad *</label>
-                    <input type="number" id="cedula" name="cedula" class="form-control alba-input" placeholder="Ej. 12345678" required>
-                </div>
-
-                <!-- Teléfono -->
-                <div class="col-md-6">
-                    <label for="telefono" class="alba-label">Teléfono *</label>
-                    <input type="number" id="telefono" name="telefono" class="form-control alba-input" placeholder="Ej. 04141234567" required>
-                </div>
-
-                <!-- Cargo -->
-                <div class="col-md-6">
-                    <label for="cargo" class="alba-label">Cargo *</label>
-                    <input type="text" id="cargo" name="cargo" class="form-control alba-input" placeholder="Ej. Operador de Producción" required>
-                </div>
-
-                <!-- Departamento -->
-                <div class="col-md-6">
-                    <label for="departamento" class="alba-label">Departamento *</label>
-                    <input type="text" id="departamento" name="departamento" class="form-control alba-input" placeholder="Ej. Calidad" required>
-                </div>
-
-                <!-- Tipo de Jornada & Días (Texto Libre) -->
-                <div class="col-md-6">
-                    <label for="tipo_jornada" class="alba-label">Tipo de Jornada y Días de Trabajo *</label>
-                    <input type="text" 
-                           id="tipo_jornada" 
-                           name="tipo_jornada" 
-                           class="form-control alba-input" 
-                           placeholder="Ej. Lunes a Viernes (8:00 AM - 5:00 PM)" 
-                           required>
-                    <div class="form-text small text-muted mt-1">
-                        <i class="bi bi-info-circle me-1"></i> Escribe los días y el horario exacto (ej. <em>Lunes a Sábado (7:00 AM - 3:00 PM)</em>).
+                    <!-- Cédula -->
+                    <div class="col-md-6">
+                        <label for="cedula" class="alba-label">Cédula de Identidad *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 text-muted fw-bold">V-</span>
+                            <input type="number" id="cedula" name="cedula" class="form-control border-start-0 ps-0 alba-input" placeholder="Ej. 12345678" required>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Estatus del Empleado -->
-                <div class="col-md-6">
-                    <label for="estatus_empleado" class="alba-label">Estatus del Empleado</label>
-                    <select id="estatus_empleado" name="estatus_empleado" class="form-select alba-input">
-                        <option value="Activo" selected>✅ Activo</option>
-                        <option value="De Vacaciones">🏖️ De Vacaciones</option>
-                        <option value="En Reposo Médico">🏥 En Reposo Médico</option>
-                        <option value="Permiso Especial">📋 Permiso Especial</option>
-                        <option value="Suspendido">🚫 Suspendido</option>
-                        <option value="Baja Temporal">⏸️ Baja Temporal</option>
-                        <option value="Inactivo">🔴 Inactivo</option>
-                    </select>
-                    <div class="form-text small text-success mt-1">
-                        <i class="bi bi-shield-check me-1"></i> Solo estatus <strong>Activo</strong> habilita el QR de asistencia.
-                    </div>
-                </div>
-
-                <!-- Detalle del Estatus (visible solo cuando no es Activo) -->
-                <div id="detalle-estatus-registro" class="col-12 d-none">
-                    <div class="card border-warning-subtle bg-warning-subtle p-3">
-                        <p class="small fw-bold text-warning-emphasis mb-2">
-                            <i class="bi bi-calendar-range me-1"></i> Período y Motivo del Estatus
-                        </p>
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <label for="estatus_desde" class="alba-label small">Fecha Inicio</label>
-                                <input type="date" id="estatus_desde" name="estatus_desde" class="form-control alba-input">
-                                <div class="form-text small">Desde cuándo aplica.</div>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="estatus_hasta" class="alba-label small">Fecha de Retorno Estimada</label>
-                                <input type="date" id="estatus_hasta" name="estatus_hasta" class="form-control alba-input">
-                                <div class="form-text small">Hasta cuándo dura (opcional).</div>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="estatus_observacion" class="alba-label small">Motivo / Observación</label>
-                                <input type="text" id="estatus_observacion" name="estatus_observacion" class="form-control alba-input"
-                                       placeholder="Ej. Reposo por operación, vacaciones aprobadas...">
-                            </div>
+                    <!-- Teléfono -->
+                    <div class="col-md-6">
+                        <label for="telefono" class="alba-label">Teléfono *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-telephone text-muted"></i></span>
+                            <input type="number" id="telefono" name="telefono" class="form-control border-start-0 ps-0 alba-input" placeholder="Ej. 04141234567" required>
                         </div>
                     </div>
                 </div>
-
-                <!-- 🔑 SECCIÓN DE CONTRASEÑAS -->
-                <div class="col-12 border-top pt-3 mt-4">
-                    <h5 class="h6 fw-bold text-dark mb-3"><i class="bi bi-shield-lock-fill text-primary me-1"></i> Configuración de Seguridad</h5>
-                </div>
-
-                <!-- Contraseña 1 -->
-                <div class="col-md-6">
-                    <label for="password" class="alba-label">Contraseña *</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-key text-muted"></i></span>
-                        <input type="password" id="password" name="password" class="form-control border-start-0 border-end-0 ps-0" placeholder="••••••••" required>
-                        <button type="button" class="btn btn-outline-secondary border-start-0 toggle-pass" data-target="password">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-
-                    <!-- Indicador de Fuerza de Contraseña -->
-                    <div class="mt-2">
-                        <div class="progress strength-meter">
-                            <div id="strength-bar" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
-                        </div>
-                        <small id="strength-text" class="text-muted d-block mt-1">Seguridad: <span class="fw-semibold">No ingresada</span></small>
-                    </div>
-                </div>
-
-                <!-- Contraseña 2 (Confirmación) -->
-                <div class="col-md-6">
-                    <label for="confirm_password" class="alba-label">Confirmar Contraseña *</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-check2-circle text-muted"></i></span>
-                        <input type="password" id="confirm_password" name="confirm_password" class="form-control border-start-0 border-end-0 ps-0" placeholder="••••••••" required>
-                        <button type="button" class="btn btn-outline-secondary border-start-0 toggle-pass" data-target="confirm_password">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-
-                    <!-- Indicador de Coincidencia -->
-                    <div class="mt-2">
-                        <div id="match-feedback" class="small fw-semibold text-muted">
-                            <i class="bi bi-dash-circle me-1"></i> Escribe ambas contraseñas
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recomendaciones de Seguridad -->
-                <div class="col-12">
-                    <div class="p-3 bg-light rounded-3 border">
-                        <span class="small fw-bold text-dark d-block mb-1"><i class="bi bi-info-circle text-primary me-1"></i> Recomendaciones para una contraseña segura:</span>
-                        <ul class="req-list row g-1">
-                            <li id="req-length" class="col-sm-4"><i class="bi bi-circle me-1"></i> Mínimo 8 caracteres</li>
-                            <li id="req-upper" class="col-sm-4"><i class="bi bi-circle me-1"></i> Una letra mayúscula</li>
-                            <li id="req-number" class="col-sm-4"><i class="bi bi-circle me-1"></i> Al menos un número</li>
-                        </ul>
-                    </div>
-                </div>
-
             </div>
 
-            <button type="submit" id="btn-submit" class="btn btn-alba-emerald w-100 py-2.5 mt-4 fs-6">
-                <i class="bi bi-person-check-fill me-1"></i> Completar Registro
+            <!-- 💼 SECCIÓN 2: INFORMACIÓN LABORAL -->
+            <div class="form-section-card">
+                <div class="form-section-title">
+                    <i class="bi bi-briefcase-fill text-amber"></i> 2. Cargo y Asignación Laboral
+                </div>
+                <div class="row g-3">
+                    <!-- Cargo -->
+                    <div class="col-md-6">
+                        <label for="cargo" class="alba-label">Cargo *</label>
+                        <input type="text" id="cargo" name="cargo" class="form-control alba-input" placeholder="Ej. Operador de Producción" required>
+                    </div>
+
+                    <!-- Departamento -->
+                    <div class="col-md-6">
+                        <label for="departamento" class="alba-label">Departamento *</label>
+                        <input type="text" id="departamento" name="departamento" class="form-control alba-input" placeholder="Ej. Calidad" required>
+                    </div>
+
+                    <!-- Tipo de Jornada -->
+                    <div class="col-md-6">
+                        <label for="tipo_jornada" class="alba-label">Horario Preferido / Solicitado</label>
+                        <input type="text" 
+                               id="tipo_jornada" 
+                               name="tipo_jornada" 
+                               class="form-control alba-input" 
+                               placeholder="Ej. Lunes a Viernes (8:00 AM - 5:00 PM)">
+                        <div class="form-text small text-muted mt-1">
+                            <i class="bi bi-info-circle me-1"></i> Si lo dejas en blanco, quedará pendiente por aprobación del Administrador.
+                        </div>
+                    </div>
+
+                    <!-- Estatus del Empleado -->
+                    <div class="col-md-6">
+                        <label for="estatus_empleado" class="alba-label">Estatus Inicial</label>
+                        <select id="estatus_empleado" name="estatus_empleado" class="form-select alba-input">
+                            <option value="Activo" selected>✅ Activo</option>
+                            <option value="De Vacaciones">🏖️ De Vacaciones</option>
+                            <option value="En Reposo Médico">🏥 En Reposo Médico</option>
+                            <option value="Permiso Especial">📋 Permiso Especial</option>
+                            <option value="Inactivo">🔴 Inactivo</option>
+                        </select>
+                        <div class="form-text small text-success mt-1">
+                            <i class="bi bi-shield-check me-1"></i> Solo estatus <strong>Activo</strong> habilita el QR de marcaje.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🔒 SECCIÓN 3: CREDENCIALES DE ACCESO -->
+            <div class="form-section-card mb-4">
+                <div class="form-section-title">
+                    <i class="bi bi-shield-lock-fill text-primary"></i> 3. Credenciales de Cuenta y Seguridad
+                </div>
+                <div class="row g-3">
+                    <!-- Usuario -->
+                    <div class="col-md-6">
+                        <label for="usuario" class="alba-label">Nombre de Usuario *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-person-badge text-muted"></i></span>
+                            <input type="text" id="usuario" name="usuario" class="form-control border-start-0 ps-0 alba-input" placeholder="Ej. mrodriguez" required>
+                        </div>
+                        <div id="usuario-availability-feedback" class="mt-2 small fw-semibold text-muted d-none"></div>
+                    </div>
+
+                    <!-- Correo -->
+                    <div class="col-md-6">
+                        <label for="correo" class="alba-label">Correo Electrónico *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                            <input type="email" id="correo" name="correo" class="form-control border-start-0 ps-0 alba-input" placeholder="correo@alimentosdelalba.com" required>
+                        </div>
+                        <div id="correo-availability-feedback" class="mt-2 small fw-semibold text-muted d-none"></div>
+                    </div>
+
+                    <!-- Contraseña 1 -->
+                    <div class="col-md-6">
+                        <label for="password" class="alba-label">Contraseña *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-key text-muted"></i></span>
+                            <input type="password" id="password" name="password" class="form-control border-start-0 border-end-0 ps-0 alba-input" placeholder="••••••••" required>
+                            <button type="button" class="btn btn-outline-secondary border-start-0 toggle-pass" data-target="password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+
+                        <!-- Indicador de Fuerza de Contraseña -->
+                        <div class="mt-2">
+                            <div class="progress strength-meter">
+                                <div id="strength-bar" class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small id="strength-text" class="text-muted d-block mt-1">Seguridad: <span class="fw-semibold">No ingresada</span></small>
+                        </div>
+                    </div>
+
+                    <!-- Contraseña 2 (Confirmación) -->
+                    <div class="col-md-6">
+                        <label for="confirm_password" class="alba-label">Confirmar Contraseña *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-check2-circle text-muted"></i></span>
+                            <input type="password" id="confirm_password" name="confirm_password" class="form-control border-start-0 border-end-0 ps-0 alba-input" placeholder="••••••••" required>
+                            <button type="button" class="btn btn-outline-secondary border-start-0 toggle-pass" data-target="confirm_password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+
+                        <!-- Indicador de Coincidencia -->
+                        <div class="mt-2">
+                            <div id="match-feedback" class="small fw-semibold text-muted">
+                                <i class="bi bi-dash-circle me-1"></i> Escribe ambas contraseñas
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recomendaciones de Seguridad -->
+                    <div class="col-12 mt-3">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="small fw-bold text-dark d-block mb-1"><i class="bi bi-info-circle text-primary me-1"></i> Requisitos de contraseña:</span>
+                            <ul class="req-list row g-1">
+                                <li id="req-length" class="col-sm-4"><i class="bi bi-circle me-1"></i> Mínimo 8 caracteres</li>
+                                <li id="req-upper" class="col-sm-4"><i class="bi bi-circle me-1"></i> Una letra mayúscula</li>
+                                <li id="req-number" class="col-sm-4"><i class="bi bi-circle me-1"></i> Al menos un número</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <button type="submit" id="btn-submit" class="btn btn-alba-emerald w-100 py-3 fs-6 shadow-glow">
+                <i class="bi bi-person-check-fill me-1"></i> Completar Registro de Empleado
             </button>
 
             <div class="text-center mt-3 pt-3 border-top">
-                <span class="text-muted small">¿Ya tienes una cuenta?</span>
-                <a href="/auth/login-empleado" class="text-decoration-none fw-semibold text-primary ms-1">Iniciar Sesión</a>
+                <span class="text-muted small">¿Ya tienes una cuenta registrada?</span>
+                <a href="/auth/login-empleado" class="text-decoration-none fw-semibold text-success ms-1">Iniciar Sesión</a>
             </div>
         </form>
     </div>
@@ -344,8 +343,121 @@
                 toggleDetalleEstatus();
             }
 
+            // ── COMPROBACIÓN EN TIEMPO REAL: DISPONIBILIDAD DE USUARIO ──
+            const usuarioInput = document.getElementById('usuario');
+            const usernameFeedback = document.getElementById('usuario-availability-feedback');
+            let isUsernameAvailable = true;
+            let usernameDebounceTimer = null;
+
+            if (usuarioInput && usernameFeedback) {
+                usuarioInput.addEventListener('input', function() {
+                    clearTimeout(usernameDebounceTimer);
+                    const usernameVal = this.value.trim();
+
+                    if (usernameVal.length === 0) {
+                        usernameFeedback.className = 'mt-2 small text-muted d-none';
+                        usernameFeedback.innerHTML = '';
+                        isUsernameAvailable = true;
+                        return;
+                    }
+
+                    if (usernameVal.length < 3) {
+                        usernameFeedback.className = 'mt-2 small text-warning fw-semibold d-block p-2 bg-warning-subtle border border-warning-subtle rounded-3';
+                        usernameFeedback.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> El nombre de usuario debe tener al menos 3 caracteres.';
+                        isUsernameAvailable = false;
+                        return;
+                    }
+
+                    usernameFeedback.className = 'mt-2 small text-muted d-block p-2 bg-light border rounded-3';
+                    usernameFeedback.innerHTML = '<i class="bi bi-hourglass-split me-1 spinner-border spinner-border-sm"></i> Verificando disponibilidad...';
+
+                    usernameDebounceTimer = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`/auth/verificar-usuario?usuario=${encodeURIComponent(usernameVal)}`);
+                            const data = await res.json();
+
+                            if (data.available) {
+                                usernameFeedback.className = 'mt-2 small text-success fw-bold d-block p-2 bg-success-subtle border border-success-subtle rounded-3 shadow-sm';
+                                usernameFeedback.innerHTML = `<i class="bi bi-check-circle-fill me-1 fs-6"></i> ${data.message}`;
+                                isUsernameAvailable = true;
+                            } else {
+                                usernameFeedback.className = 'mt-2 small text-danger fw-bold d-block p-2 bg-danger-subtle border border-danger-subtle rounded-3 shadow-sm';
+                                usernameFeedback.innerHTML = `<i class="bi bi-x-circle-fill me-1 fs-6"></i> ${data.message}`;
+                                isUsernameAvailable = false;
+                            }
+                        } catch (err) {
+                            console.error('Error al verificar usuario:', err);
+                        }
+                    }, 350);
+                });
+            }
+
+            // ── COMPROBACIÓN EN TIEMPO REAL: DISPONIBILIDAD DE CORREO ──
+            const correoInput = document.getElementById('correo');
+            const emailFeedback = document.getElementById('correo-availability-feedback');
+            let isEmailAvailable = true;
+            let emailDebounceTimer = null;
+
+            if (correoInput && emailFeedback) {
+                correoInput.addEventListener('input', function() {
+                    clearTimeout(emailDebounceTimer);
+                    const emailVal = this.value.trim();
+
+                    if (emailVal.length === 0) {
+                        emailFeedback.className = 'mt-2 small text-muted d-none';
+                        emailFeedback.innerHTML = '';
+                        isEmailAvailable = true;
+                        return;
+                    }
+
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(emailVal)) {
+                        emailFeedback.className = 'mt-2 small text-warning fw-semibold d-block p-2 bg-warning-subtle border border-warning-subtle rounded-3';
+                        emailFeedback.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Formato de correo electrónico inválido.';
+                        isEmailAvailable = false;
+                        return;
+                    }
+
+                    emailFeedback.className = 'mt-2 small text-muted d-block p-2 bg-light border rounded-3';
+                    emailFeedback.innerHTML = '<i class="bi bi-hourglass-split me-1 spinner-border spinner-border-sm"></i> Verificando disponibilidad...';
+
+                    emailDebounceTimer = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`/auth/verificar-correo?correo=${encodeURIComponent(emailVal)}`);
+                            const data = await res.json();
+
+                            if (data.available) {
+                                emailFeedback.className = 'mt-2 small text-success fw-bold d-block p-2 bg-success-subtle border border-success-subtle rounded-3 shadow-sm';
+                                emailFeedback.innerHTML = `<i class="bi bi-check-circle-fill me-1 fs-6"></i> ${data.message}`;
+                                isEmailAvailable = true;
+                            } else {
+                                emailFeedback.className = 'mt-2 small text-danger fw-bold d-block p-2 bg-danger-subtle border border-danger-subtle rounded-3 shadow-sm';
+                                emailFeedback.innerHTML = `<i class="bi bi-x-circle-fill me-1 fs-6"></i> ${data.message}`;
+                                isEmailAvailable = false;
+                            }
+                        } catch (err) {
+                            console.error('Error al verificar correo:', err);
+                        }
+                    }, 350);
+                });
+            }
+
             // Validar submit
             form.addEventListener('submit', (e) => {
+                if (!isUsernameAvailable) {
+                    e.preventDefault();
+                    alert('El nombre de usuario no está disponible. Por favor, elige un nombre de usuario diferente.');
+                    usuarioInput.focus();
+                    return;
+                }
+
+                if (!isEmailAvailable) {
+                    e.preventDefault();
+                    alert('El correo electrónico no está disponible o es inválido. Por favor, usa otro correo.');
+                    correoInput.focus();
+                    return;
+                }
+
                 if (passwordInput.value !== confirmInput.value) {
                     e.preventDefault();
                     alert('Las contraseñas no coinciden. Por favor, verifícalas.');

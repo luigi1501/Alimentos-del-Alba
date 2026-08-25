@@ -13,12 +13,25 @@
 
     <!-- Header Navbar Admin -->
     <header class="alba-navbar">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2">
             <a href="/admin" class="navbar-brand">
                 <img src="/images/logo2.jpg" alt="Logo Alba" class="brand-logo">
                 <span>Alimentos del Alba <span class="badge badge-alba-amber ms-2">Admin</span></span>
             </a>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Botón Notificación Pendientes -->
+                <a href="<%= locals.pendientesTargetUrl || '/tabGeneral?filter=pendientes' %>" class="btn btn-sm position-relative d-inline-flex align-items-center gap-2 <%= (locals.pendientesCount && locals.pendientesCount > 0) ? 'btn-alba-warning-glow' : 'btn-outline-secondary text-light' %>" title="Usuarios y marcajes pendientes por atender">
+                    <i class="bi bi-bell-fill <%= (locals.pendientesCount && locals.pendientesCount > 0) ? 'text-warning pulse-icon' : '' %>"></i>
+                    <span class="d-none d-sm-inline font-heading">Pendientes</span>
+                    <% if (locals.pendientesCount && locals.pendientesCount > 0) { %>
+                        <span class="badge rounded-pill bg-danger shadow-sm badge-pulse">
+                            <%= locals.pendientesCount %>
+                        </span>
+                    <% } else { %>
+                        <span class="badge bg-secondary rounded-pill" style="font-size: 0.7rem;">0</span>
+                    <% } %>
+                </a>
+
                 <a href="/admin" class="btn btn-sm btn-alba-secondary">
                     <i class="bi bi-house me-1"></i> Menú Admin
                 </a>
@@ -59,14 +72,29 @@
                 <span class="badge badge-alba-amber fs-6 px-3 py-2">
                     <i class="bi bi-list-check me-1"></i> <%= (historial && historial.length) ? historial.length : 0 %> Registros
                 </span>
+                <% const countPendientesSalida = locals.countAsistenciasPendientes || (historial ? historial.filter(h => !h.hora_salida || h.hora_salida === 'N/A').length : 0); %>
+                <span class="badge <%= countPendientesSalida > 0 ? 'bg-danger text-white badge-pulse' : 'bg-secondary text-white' %> fs-6 px-3 py-2">
+                    <i class="bi bi-clock-history me-1"></i> <%= countPendientesSalida %> Pendientes de Salida
+                </span>
             </div>
         </div>
 
-        <!-- Filter Search Bar -->
+        <!-- Filter Search Bar & Quick Filters -->
         <div class="alba-card p-3 mb-4">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" id="filter-input" class="form-control border-start-0 ps-0" placeholder="Buscar por empleado, cédula, fecha, observación o departamento...">
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-7 col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" id="filter-input" class="form-control border-start-0 ps-0" placeholder="Buscar por empleado, cédula, fecha, observación o departamento...">
+                    </div>
+                </div>
+                <div class="col-lg-5 col-md-6 d-flex gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary flex-fill filter-btn active" data-filter="all">Todos los Marcajes</button>
+                    <button type="button" class="btn btn-sm btn-outline-warning flex-fill filter-btn" data-filter="pendientes">
+                        ⚠️ Pendientes (<%= countPendientesSalida %>)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success flex-fill filter-btn" data-filter="completados">Completados</button>
+                </div>
             </div>
         </div>
 
@@ -77,97 +105,97 @@
             </div>
         <% } %>
 
-        <!-- History Table -->
-        <div class="alba-table-container">
-            <div class="table-responsive">
-                <table class="alba-table" id="tabla-historial">
-                    <thead>
-                        <tr>
-                            <th># ID</th>
-                            <th>Empleado</th>
-                            <th>Cargo / Dpto</th>
-                            <th>Jornada Asignada</th>
-                            <th>Fecha</th>
-                            <th>Hora Entrada</th>
-                            <th>Hora Salida</th>
-                            <th>Evaluación / Duración</th>
-                            <th>Observaciones e Incidencias</th>
-                            <th class="text-center">Acción Admin</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (historial && historial.length > 0) { %>
-                            <% historial.forEach(registro => { %>
-                                <tr class="<%= (registro.alertaTipo === 'danger') ? 'table-danger' : (registro.alertaTipo === 'warning' ? 'table-warning' : '') %>">
-                                    <td class="fw-bold text-muted">#<%= registro.id_asistencia %></td>
-                                    <td>
-                                        <div class="fw-bold text-dark"><%= registro.nombre ? (registro.nombre + ' ' + (registro.apellido || '')) : 'N/A' %></div>
-                                        <small class="text-muted">C.I: V-<%= registro.cedula || 'N/A' %></small>
-                                    </td>
-                                    <td>
-                                        <div><span class="badge badge-alba-slate"><%= registro.cargo || 'General' %></span></div>
-                                        <small class="text-muted"><%= registro.departamento || 'Planta' %></small>
-                                    </td>
-                                    <td>
-                                        <small class="fw-semibold text-primary"><i class="bi bi-clock me-1"></i><%= registro.tipo_jornada || 'Diurna (8-5)' %></small>
-                                    </td>
-                                    <td>
-                                        <i class="bi bi-calendar3 me-1 text-muted"></i><%= registro.fechaFormatted || registro.fecha %>
-                                    </td>
-                                    <td>
-                                        <span class="text-success fw-semibold"><i class="bi bi-box-arrow-in-right me-1"></i><%= registro.horaEntradaFormatted || registro.hora_entrada %></span>
-                                    </td>
-                                    <td>
-                                        <% if (registro.hora_salida && registro.hora_salida !== 'N/A') { %>
-                                            <span class="text-primary fw-semibold">
-                                                <i class="bi bi-box-arrow-left me-1"></i><%= registro.horaSalidaFormatted || registro.hora_salida %>
-                                                <% if (registro.salida_manual) { %>
-                                                    <span class="badge bg-secondary ms-1" style="font-size: 0.65rem;">Manual</span>
-                                                <% } %>
-                                            </span>
-                                        <% } else { %>
-                                            <span class="text-danger fw-bold"><i class="bi bi-clock-history me-1"></i> Pendiente</span>
-                                        <% } %>
-                                    </td>
-                                    <td>
-                                        <div><strong class="text-dark small"><%= registro.duracionJornada || 'N/A' %></strong></div>
-                                        <span class="badge badge-alba-amber" style="font-size: 0.7rem;"><%= registro.evaluacionTurno || 'Normal' %></span>
-                                    </td>
-                                    <td style="max-width: 260px;">
-                                        <div class="small <%= (registro.alertaTipo === 'danger') ? 'text-danger fw-bold' : (registro.alertaTipo === 'warning' ? 'text-warning fw-semibold' : 'text-success') %>">
-                                            <%= registro.observacionInteligente || 'Normal' %>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <% if (!registro.hora_salida || registro.hora_salida === 'N/A') { %>
-                                            <button type="button" 
-                                                    class="btn btn-sm btn-outline-danger btn-ajuste-manual"
-                                                    data-id="<%= registro.id_asistencia %>"
-                                                    data-empleado="<%= registro.nombre %> <%= registro.apellido || '' %>"
-                                                    data-fecha="<%= registro.fechaFormatted || registro.fecha %>"
-                                                    data-entrada="<%= registro.horaEntradaFormatted || registro.hora_entrada %>"
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#modalAjusteManual"
-                                                    title="Registrar salida manual y desbloquear QR">
-                                                <i class="bi bi-key-fill me-1"></i> Salida Manual
-                                            </button>
-                                        <% } else { %>
-                                            <span class="badge badge-alba-emerald"><i class="bi bi-check-all me-1"></i> Cerrado</span>
-                                        <% } %>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="10" class="text-center py-5 text-muted">
-                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                    No hay registros de asistencia en el historial.
+        <!-- History Table Container -->
+        <div class="alba-table-container shadow-md">
+            <table class="alba-table" id="tabla-historial">
+                <thead>
+                    <tr>
+                        <th style="width: 65px;" class="text-nowrap"># ID</th>
+                        <th class="text-nowrap" style="min-width: 160px;">Empleado</th>
+                        <th class="text-nowrap" style="min-width: 120px;">Cargo / Dpto</th>
+                        <th class="text-nowrap" style="min-width: 140px;">Jornada Asignada</th>
+                        <th class="text-nowrap" style="min-width: 110px;">Fecha</th>
+                        <th class="text-nowrap" style="min-width: 115px;">Hora Entrada</th>
+                        <th class="text-nowrap" style="min-width: 115px;">Hora Salida</th>
+                        <th class="text-nowrap" style="min-width: 140px;">Evaluación / Duración</th>
+                        <th style="min-width: 260px; max-width: 340px;">Observaciones e Incidencias</th>
+                        <th class="text-center text-nowrap" style="width: 140px;">Acción Admin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (historial && historial.length > 0) { %>
+                        <% historial.forEach(registro => { %>
+                            <% const esPendienteSalida = !registro.hora_salida || registro.hora_salida === 'N/A'; %>
+                            <tr data-status="<%= esPendienteSalida ? 'pendiente' : 'completado' %>" class="<%= (registro.alertaTipo === 'danger' || esPendienteSalida) ? 'alba-tr-danger' : (registro.alertaTipo === 'warning' ? 'alba-tr-warning' : '') %>">
+                                <td class="fw-bold text-muted text-nowrap">#<%= registro.id_asistencia %></td>
+                                <td>
+                                    <div class="fw-bold text-dark"><%= registro.nombre ? (registro.nombre + ' ' + (registro.apellido || '')) : 'N/A' %></div>
+                                    <small class="text-muted text-nowrap">C.I: V-<%= registro.cedula || 'N/A' %></small>
+                                </td>
+                                <td>
+                                    <div><span class="badge badge-alba-slate text-nowrap"><%= registro.cargo || 'General' %></span></div>
+                                    <small class="text-muted"><%= registro.departamento || 'Planta' %></small>
+                                </td>
+                                <td class="text-nowrap">
+                                    <small class="fw-semibold text-primary"><i class="bi bi-clock me-1"></i><%= registro.tipo_jornada || 'Diurna (8-5)' %></small>
+                                </td>
+                                <td class="text-nowrap">
+                                    <i class="bi bi-calendar3 me-1 text-muted"></i><%= registro.fechaFormatted || registro.fecha %>
+                                </td>
+                                <td class="text-nowrap">
+                                    <span class="text-success fw-semibold"><i class="bi bi-box-arrow-in-right me-1"></i><%= registro.horaEntradaFormatted || registro.hora_entrada %></span>
+                                </td>
+                                <td class="text-nowrap">
+                                    <% if (!esPendienteSalida) { %>
+                                        <span class="text-primary fw-semibold">
+                                            <i class="bi bi-box-arrow-left me-1"></i><%= registro.horaSalidaFormatted || registro.hora_salida %>
+                                            <% if (registro.salida_manual) { %>
+                                                <span class="badge bg-secondary ms-1" style="font-size: 0.65rem;">Manual</span>
+                                            <% } %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="badge bg-danger text-white badge-pulse"><i class="bi bi-clock-history me-1"></i> Pendiente Salida</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="text-nowrap"><strong class="text-dark small"><%= registro.duracionJornada || 'N/A' %></strong></div>
+                                    <span class="badge badge-alba-amber text-nowrap" style="font-size: 0.7rem;"><%= registro.evaluacionTurno || 'Normal' %></span>
+                                </td>
+                                <td class="col-obs" style="min-width: 260px; max-width: 340px; white-space: normal; word-break: break-word;">
+                                    <div class="small <%= (registro.alertaTipo === 'danger' || esPendienteSalida) ? 'text-danger fw-bold' : (registro.alertaTipo === 'warning' ? 'text-warning fw-semibold' : 'text-success') %>">
+                                        <%= registro.observacionInteligente || (esPendienteSalida ? 'Jornada activa. Salida pendiente de marcaje.' : 'Normal') %>
+                                    </div>
+                                </td>
+                                <td class="text-center text-nowrap" style="width: 140px;">
+                                    <% if (esPendienteSalida) { %>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-amber-action text-nowrap"
+                                                data-id="<%= registro.id_asistencia %>"
+                                                data-empleado="<%= registro.nombre %> <%= registro.apellido || '' %>"
+                                                data-fecha="<%= registro.fechaFormatted || registro.fecha %>"
+                                                data-entrada="<%= registro.horaEntradaFormatted || registro.hora_entrada %>"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#modalAjusteManual"
+                                                title="Registrar salida manual y desbloquear QR">
+                                            <i class="bi bi-key-fill me-1"></i> Salida Manual
+                                        </button>
+                                    <% } else { %>
+                                        <span class="badge badge-alba-emerald text-nowrap"><i class="bi bi-check-all me-1"></i> Cerrado</span>
+                                    <% } %>
                                 </td>
                             </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="10" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 text-warning"></i>
+                                No hay registros de asistencia en el historial.
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
         </div>
 
     </main>
@@ -303,7 +331,42 @@
         document.addEventListener('DOMContentLoaded', () => {
             const filterInput = document.getElementById('filter-input');
             const tbody = document.querySelector('#tabla-historial tbody');
-            const rows = tbody.querySelectorAll('tr');
+            const rows = tbody.querySelectorAll('tr[data-status]');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            let currentFilter = 'all';
+
+            // Comprobar parámetro en la URL (?filter=pendientes)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('filter') === 'pendientes') {
+                currentFilter = 'pendientes';
+                filterBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.filter === 'pendientes');
+                });
+            }
+
+            function applyFilters() {
+                const query = filterInput ? filterInput.value.toLowerCase().trim() : '';
+                rows.forEach(row => {
+                    const status = row.dataset.status;
+                    const text = row.textContent.toLowerCase();
+
+                    let matchesFilter = true;
+                    if (currentFilter === 'pendientes') {
+                        matchesFilter = (status === 'pendiente');
+                    } else if (currentFilter === 'completados') {
+                        matchesFilter = (status === 'completado');
+                    }
+
+                    const matchesSearch = text.includes(query);
+
+                    if (matchesFilter && matchesSearch) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
 
             // Auto-Show Toast
             const toastEl = document.getElementById('albaToast');
@@ -312,16 +375,21 @@
                 toast.show();
             }
 
-            // Búsqueda en tiempo real
+            // Eventos de filtro y búsqueda
             if (filterInput) {
-                filterInput.addEventListener('input', function() {
-                    const query = this.value.toLowerCase().trim();
-                    rows.forEach(row => {
-                        const text = row.textContent.toLowerCase();
-                        row.style.display = text.includes(query) ? '' : 'none';
-                    });
-                });
+                filterInput.addEventListener('input', applyFilters);
             }
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    applyFilters();
+                });
+            });
+
+            applyFilters();
 
             // Modal Ajuste Manual Data Binding
             const botonesAjuste = document.querySelectorAll('.btn-ajuste-manual');

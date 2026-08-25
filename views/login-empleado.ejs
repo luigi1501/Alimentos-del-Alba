@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Empleados — Alimentos del Alba</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/stylesheets/main-theme.css">
@@ -12,36 +16,47 @@
 <body class="login-page-body">
 
     <div class="employee-card">
+
+        <!-- Mode Switcher (Empleado vs Admin) -->
+        <div class="auth-segmented-control">
+            <a href="/auth/login-empleado" class="active employee-active">
+                <i class="bi bi-person-circle me-1"></i> Empleado
+            </a>
+            <a href="/login">
+                <i class="bi bi-shield-lock-fill me-1"></i> Administrador
+            </a>
+        </div>
+
         <div class="brand-header">
             <img src="/images/logo2.jpg" alt="Alimentos del Alba Logo">
-            <h2 class="h3 fw-bold text-dark mb-1">Portal del Empleado</h2>
-            <p class="text-muted small">Ingresa con tus credenciales asignadas</p>
+            <h1 class="h4 fw-bold text-dark mb-1">Portal del Empleado</h1>
+            <p class="text-muted small mb-0">Ingresa con tu usuario y contraseña asignados</p>
         </div>
 
         <% if (locals.logout === 'success') { %>
             <div class="alert alert-success d-flex align-items-center gap-2 mb-4" role="alert">
                 <i class="bi bi-check-circle-fill flex-shrink-0"></i>
-                <div>Has cerrado sesión de empleado exitosamente. ¡Hasta pronto!</div>
+                <div class="small">Has cerrado sesión de empleado exitosamente. ¡Hasta pronto!</div>
             </div>
         <% } else if (locals.error === 'incorrectPassword') { %>
             <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
-                <i class="bi bi-exclamation-circle-fill"></i>
-                <div>Contraseña incorrecta. Por favor, verifica tus datos.</div>
+                <i class="bi bi-exclamation-circle-fill flex-shrink-0"></i>
+                <div class="small">Contraseña incorrecta. Por favor, verifica tus datos.</div>
             </div>
         <% } else if (locals.error === 'employeeNotFound') { %>
             <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
-                <i class="bi bi-person-x-fill"></i>
-                <div>Usuario no registrado en el sistema.</div>
+                <i class="bi bi-person-x-fill flex-shrink-0"></i>
+                <div class="small">Usuario no registrado en el sistema.</div>
             </div>
         <% } else if (locals.error === 'tooManyAttempts') { %>
             <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" role="alert">
-                <i class="bi bi-shield-exclamation"></i>
-                <div>Demasiados intentos fallidos. Intenta nuevamente en 15 minutos.</div>
+                <i class="bi bi-shield-exclamation flex-shrink-0"></i>
+                <div class="small">Demasiados intentos fallidos. Intenta nuevamente en 15 minutos.</div>
             </div>
         <% } else if (locals.error === 'loginFailed') { %>
             <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
-                <i class="bi bi-x-octagon-fill"></i>
-                <div>Error del servidor al iniciar sesión. Inténtalo más tarde.</div>
+                <i class="bi bi-x-octagon-fill flex-shrink-0"></i>
+                <div class="small">Error del servidor al iniciar sesión. Inténtalo más tarde.</div>
             </div>
         <% } %>
 
@@ -50,27 +65,30 @@
                 <label for="usuario" class="alba-label">Nombre de Usuario</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light border-end-0"><i class="bi bi-person-badge text-muted"></i></span>
-                    <input type="text" id="usuario" name="usuario" class="form-control border-start-0 ps-0" placeholder="Ej. jperez" required autofocus>
+                    <input type="text" id="usuario" name="usuario" class="form-control border-start-0 ps-0 alba-input" placeholder="Ej. mrodriguez" required autofocus>
                 </div>
             </div>
 
             <div class="mb-4">
                 <label for="password" class="alba-label">Contraseña</label>
                 <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-key text-muted"></i></span>
-                    <input type="password" id="password" name="password" class="form-control border-start-0 ps-0" placeholder="••••••••" required>
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-key-fill text-muted"></i></span>
+                    <input type="password" id="password" name="password" class="form-control border-start-0 border-end-0 ps-0 alba-input" placeholder="••••••••" required>
+                    <button type="button" class="btn btn-outline-secondary border-start-0 toggle-pass" data-target="password" title="Mostrar u ocultar contraseña">
+                        <i class="bi bi-eye"></i>
+                    </button>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-alba-emerald w-100 py-2 mb-3">
+            <button type="submit" class="btn btn-alba-emerald w-100 py-2.5 mb-3 shadow-sm fs-6">
                 <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión Empleado
             </button>
 
             <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
                 <a href="/auth/registro-empleado" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-person-plus me-1"></i> Registrarse
+                    <i class="bi bi-person-plus me-1"></i> Crear Cuenta
                 </a>
-                <a href="/" class="text-decoration-none text-muted small">
+                <a href="/" class="text-decoration-none text-muted small hover-primary">
                     <i class="bi bi-house me-1"></i> Inicio
                 </a>
             </div>
@@ -78,5 +96,23 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.toggle-pass').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const input = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.className = 'bi bi-eye-slash';
+                    } else {
+                        input.type = 'password';
+                        icon.className = 'bi bi-eye';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
