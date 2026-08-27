@@ -86,10 +86,8 @@ const postRegistroEmpleado = async (req, res) => {
         return res.redirect('/auth/registro-empleado?error=passwordMismatch');
     }
 
-    const jornadaFinal = (tipo_jornada && tipo_jornada.trim() !== '') 
-        ? tipo_jornada.trim() 
-        : '';
-    const estatusFinal = estatus_empleado || 'Activo';
+    const jornadaFinal = '';
+    const estatusFinal = 'Activo';
 
     try {
         const empleadoId = await registrarEmpleado(
