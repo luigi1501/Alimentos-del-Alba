@@ -114,30 +114,15 @@
                     </div>
 
                     <!-- Tipo de Jornada -->
-                    <div class="col-md-6">
-                        <label for="tipo_jornada" class="alba-label">Horario Preferido / Solicitado</label>
+                    <div class="col-md-12">
+                        <label for="tipo_jornada" class="alba-label">Horario Preferido / Solicitado (Opcional)</label>
                         <input type="text" 
                                id="tipo_jornada" 
                                name="tipo_jornada" 
                                class="form-control alba-input" 
                                placeholder="Ej. Lunes a Viernes (8:00 AM - 5:00 PM)">
                         <div class="form-text small text-muted mt-1">
-                            <i class="bi bi-info-circle me-1"></i> Si lo dejas en blanco, quedará pendiente por aprobación del Administrador.
-                        </div>
-                    </div>
-
-                    <!-- Estatus del Empleado -->
-                    <div class="col-md-6">
-                        <label for="estatus_empleado" class="alba-label">Estatus Inicial</label>
-                        <select id="estatus_empleado" name="estatus_empleado" class="form-select alba-input">
-                            <option value="Activo" selected>✅ Activo</option>
-                            <option value="De Vacaciones">🏖️ De Vacaciones</option>
-                            <option value="En Reposo Médico">🏥 En Reposo Médico</option>
-                            <option value="Permiso Especial">📋 Permiso Especial</option>
-                            <option value="Inactivo">🔴 Inactivo</option>
-                        </select>
-                        <div class="form-text small text-success mt-1">
-                            <i class="bi bi-shield-check me-1"></i> Solo estatus <strong>Activo</strong> habilita el QR de marcaje.
+                            <i class="bi bi-info-circle me-1"></i> Si lo dejas en blanco, la administración te asignará tu jornada laboral.
                         </div>
                     </div>
                 </div>
