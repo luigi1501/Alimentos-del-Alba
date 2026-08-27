@@ -223,6 +223,7 @@
                                         <span class="input-group-text bg-white fw-bold text-muted border-end-0">V-</span>
                                         <input type="number" id="admin_cedula" name="cedula" class="form-control alba-input border-start-0 ps-0" placeholder="Ej. 12345678" required>
                                     </div>
+                                    <div id="admin-cedula-feedback" class="mt-2 small fw-semibold text-muted d-none"></div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="admin_telefono" class="form-label small fw-bold text-secondary">Teléfono *</label>
@@ -304,10 +305,12 @@
                                 <div class="col-md-4">
                                     <label for="admin_usuario" class="form-label small fw-bold text-secondary">Usuario *</label>
                                     <input type="text" id="admin_usuario" name="usuario" class="form-control alba-input" placeholder="Ej. cmendoza" required>
+                                    <div id="admin-usuario-feedback" class="mt-2 small fw-semibold text-muted d-none"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="admin_correo" class="form-label small fw-bold text-secondary">Correo Electrónico *</label>
                                     <input type="email" id="admin_correo" name="correo" class="form-control alba-input" placeholder="carlos@alimentosdelalba.com" required>
+                                    <div id="admin-correo-feedback" class="mt-2 small fw-semibold text-muted d-none"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="admin_password" class="form-label small fw-bold text-secondary">Contraseña *</label>
@@ -442,6 +445,159 @@
                         detalleEstatusAdmin.classList.remove('d-none');
                     } else {
                         detalleEstatusAdmin.classList.add('d-none');
+                    }
+                });
+            }
+
+            // ── COMPROBACIONES EN TIEMPO REAL PARA MODAL ADMINISTRATIVO ──
+            const adminCedulaInput = document.getElementById('admin_cedula');
+            const adminCedulaFeedback = document.getElementById('admin-cedula-feedback');
+            let isAdminCedulaAvailable = true;
+            let adminCedulaTimer = null;
+
+            if (adminCedulaInput && adminCedulaFeedback) {
+                adminCedulaInput.addEventListener('input', function() {
+                    clearTimeout(adminCedulaTimer);
+                    const val = this.value.trim();
+                    if (!val) {
+                        adminCedulaFeedback.className = 'mt-2 small text-muted d-none';
+                        adminCedulaFeedback.innerHTML = '';
+                        isAdminCedulaAvailable = true;
+                        return;
+                    }
+                    if (val.length < 5) {
+                        adminCedulaFeedback.className = 'mt-2 small text-warning fw-semibold d-block p-2 bg-warning-subtle border border-warning-subtle rounded-3';
+                        adminCedulaFeedback.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Número de cédula corto.';
+                        isAdminCedulaAvailable = false;
+                        return;
+                    }
+                    adminCedulaFeedback.className = 'mt-2 small text-muted d-block p-2 bg-light border rounded-3';
+                    adminCedulaFeedback.innerHTML = '<i class="bi bi-hourglass-split me-1 spinner-border spinner-border-sm"></i> Verificando cédula...';
+
+                    adminCedulaTimer = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`/auth/verificar-cedula?cedula=${encodeURIComponent(val)}`);
+                            const data = await res.json();
+                            if (data.available) {
+                                adminCedulaFeedback.className = 'mt-2 small text-success fw-bold d-block p-2 bg-success-subtle border border-success-subtle rounded-3';
+                                adminCedulaFeedback.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> ${data.message}`;
+                                isAdminCedulaAvailable = true;
+                            } else {
+                                adminCedulaFeedback.className = 'mt-2 small text-danger fw-bold d-block p-2 bg-danger-subtle border border-danger-subtle rounded-3';
+                                adminCedulaFeedback.innerHTML = `<i class="bi bi-x-circle-fill me-1"></i> ${data.message}`;
+                                isAdminCedulaAvailable = false;
+                            }
+                        } catch (err) { console.error('Error al verificar cédula admin:', err); }
+                    }, 350);
+                });
+            }
+
+            const adminUsuarioInput = document.getElementById('admin_usuario');
+            const adminUsuarioFeedback = document.getElementById('admin-usuario-feedback');
+            let isAdminUsuarioAvailable = true;
+            let adminUsuarioTimer = null;
+
+            if (adminUsuarioInput && adminUsuarioFeedback) {
+                adminUsuarioInput.addEventListener('input', function() {
+                    clearTimeout(adminUsuarioTimer);
+                    const val = this.value.trim();
+                    if (!val) {
+                        adminUsuarioFeedback.className = 'mt-2 small text-muted d-none';
+                        adminUsuarioFeedback.innerHTML = '';
+                        isAdminUsuarioAvailable = true;
+                        return;
+                    }
+                    if (val.length < 3) {
+                        adminUsuarioFeedback.className = 'mt-2 small text-warning fw-semibold d-block p-2 bg-warning-subtle border border-warning-subtle rounded-3';
+                        adminUsuarioFeedback.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> El usuario debe tener al menos 3 caracteres.';
+                        isAdminUsuarioAvailable = false;
+                        return;
+                    }
+                    adminUsuarioFeedback.className = 'mt-2 small text-muted d-block p-2 bg-light border rounded-3';
+                    adminUsuarioFeedback.innerHTML = '<i class="bi bi-hourglass-split me-1 spinner-border spinner-border-sm"></i> Verificando usuario...';
+
+                    adminUsuarioTimer = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`/auth/verificar-usuario?usuario=${encodeURIComponent(val)}`);
+                            const data = await res.json();
+                            if (data.available) {
+                                adminUsuarioFeedback.className = 'mt-2 small text-success fw-bold d-block p-2 bg-success-subtle border border-success-subtle rounded-3';
+                                adminUsuarioFeedback.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> ${data.message}`;
+                                isAdminUsuarioAvailable = true;
+                            } else {
+                                adminUsuarioFeedback.className = 'mt-2 small text-danger fw-bold d-block p-2 bg-danger-subtle border border-danger-subtle rounded-3';
+                                adminUsuarioFeedback.innerHTML = `<i class="bi bi-x-circle-fill me-1"></i> ${data.message}`;
+                                isAdminUsuarioAvailable = false;
+                            }
+                        } catch (err) { console.error('Error al verificar usuario admin:', err); }
+                    }, 350);
+                });
+            }
+
+            const adminCorreoInput = document.getElementById('admin_correo');
+            const adminCorreoFeedback = document.getElementById('admin-correo-feedback');
+            let isAdminCorreoAvailable = true;
+            let adminCorreoTimer = null;
+
+            if (adminCorreoInput && adminCorreoFeedback) {
+                adminCorreoInput.addEventListener('input', function() {
+                    clearTimeout(adminCorreoTimer);
+                    const val = this.value.trim();
+                    if (!val) {
+                        adminCorreoFeedback.className = 'mt-2 small text-muted d-none';
+                        adminCorreoFeedback.innerHTML = '';
+                        isAdminCorreoAvailable = true;
+                        return;
+                    }
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(val)) {
+                        adminCorreoFeedback.className = 'mt-2 small text-warning fw-semibold d-block p-2 bg-warning-subtle border border-warning-subtle rounded-3';
+                        adminCorreoFeedback.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Formato de correo inválido.';
+                        isAdminCorreoAvailable = false;
+                        return;
+                    }
+                    adminCorreoFeedback.className = 'mt-2 small text-muted d-block p-2 bg-light border rounded-3';
+                    adminCorreoFeedback.innerHTML = '<i class="bi bi-hourglass-split me-1 spinner-border spinner-border-sm"></i> Verificando correo...';
+
+                    adminCorreoTimer = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`/auth/verificar-correo?correo=${encodeURIComponent(val)}`);
+                            const data = await res.json();
+                            if (data.available) {
+                                adminCorreoFeedback.className = 'mt-2 small text-success fw-bold d-block p-2 bg-success-subtle border border-success-subtle rounded-3';
+                                adminCorreoFeedback.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> ${data.message}`;
+                                isAdminCorreoAvailable = true;
+                            } else {
+                                adminCorreoFeedback.className = 'mt-2 small text-danger fw-bold d-block p-2 bg-danger-subtle border border-danger-subtle rounded-3';
+                                adminCorreoFeedback.innerHTML = `<i class="bi bi-x-circle-fill me-1"></i> ${data.message}`;
+                                isAdminCorreoAvailable = false;
+                            }
+                        } catch (err) { console.error('Error al verificar correo admin:', err); }
+                    }, 350);
+                });
+            }
+
+            // Validar submit de formulario Modal Admin
+            const adminModalForm = document.querySelector('#modalNuevoEmpleado form');
+            if (adminModalForm) {
+                adminModalForm.addEventListener('submit', (e) => {
+                    if (!isAdminCedulaAvailable) {
+                        e.preventDefault();
+                        alert('La cédula de identidad ya está registrada por otro empleado.');
+                        adminCedulaInput.focus();
+                        return;
+                    }
+                    if (!isAdminUsuarioAvailable) {
+                        e.preventDefault();
+                        alert('El nombre de usuario ya está en uso. Por favor, elige otro.');
+                        adminUsuarioInput.focus();
+                        return;
+                    }
+                    if (!isAdminCorreoAvailable) {
+                        e.preventDefault();
+                        alert('El correo electrónico ya está registrado por otro empleado.');
+                        adminCorreoInput.focus();
+                        return;
                     }
                 });
             }

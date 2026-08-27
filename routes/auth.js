@@ -16,6 +16,7 @@ router.get('/registro-empleado', authController.getRegistroEmpleado);
 router.post('/registro-empleado', authController.postRegistroEmpleado);
 router.get('/verificar-usuario', authController.verificarUsuarioDisponibilidad);
 router.get('/verificar-correo', authController.verificarCorreoDisponibilidad);
+router.get('/verificar-cedula', authController.verificarCedulaDisponibilidad);
 
 // ── Logout ─────────────────────────────────────────────────────
 router.get('/logout', authController.getLogout);

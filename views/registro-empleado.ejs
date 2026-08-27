@@ -82,6 +82,7 @@
                             <span class="input-group-text bg-white border-end-0 text-muted fw-bold">V-</span>
                             <input type="number" id="cedula" name="cedula" class="form-control border-start-0 ps-0 alba-input" placeholder="Ej. 12345678" required>
                         </div>
+                        <div id="cedula-availability-feedback" class="mt-2 small fw-semibold text-muted d-none"></div>
                     </div>
 
                     <!-- Teléfono -->
@@ -414,8 +415,64 @@
                 });
             }
 
+            // ── COMPROBACIÓN EN TIEMPO REAL: DISPONIBILIDAD DE CÉDULA ──
+            const cedulaInput = document.getElementById('cedula');
+            const cedulaFeedback = document.getElementById('cedula-availability-feedback');
+            let isCedulaAvailable = true;
+            let cedulaDebounceTimer = null;
+
+            if (cedulaInput && cedulaFeedback) {
+                cedulaInput.addEventListener('input', function() {
+                    clearTimeout(cedulaDebounceTimer);
+                    const cedulaVal = this.value.trim();
+
+                    if (cedulaVal.length === 0) {
+                        cedulaFeedback.className = 'mt-2 small text-muted d-none';
+                        cedulaFeedback.innerHTML = '';
+                        isCedulaAvailable = true;
+                        return;
+                    }
+
+                    if (cedulaVal.length < 5) {
+                        cedulaFeedback.className = 'mt-2 small text-warning fw-semibold d-block p-2 bg-warning-subtle border border-warning-subtle rounded-3';
+                        cedulaFeedback.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Ingresa un número de cédula válido.';
+                        isCedulaAvailable = false;
+                        return;
+                    }
+
+                    cedulaFeedback.className = 'mt-2 small text-muted d-block p-2 bg-light border rounded-3';
+                    cedulaFeedback.innerHTML = '<i class="bi bi-hourglass-split me-1 spinner-border spinner-border-sm"></i> Verificando cédula...';
+
+                    cedulaDebounceTimer = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`/auth/verificar-cedula?cedula=${encodeURIComponent(cedulaVal)}`);
+                            const data = await res.json();
+
+                            if (data.available) {
+                                cedulaFeedback.className = 'mt-2 small text-success fw-bold d-block p-2 bg-success-subtle border border-success-subtle rounded-3 shadow-sm';
+                                cedulaFeedback.innerHTML = `<i class="bi bi-check-circle-fill me-1 fs-6"></i> ${data.message}`;
+                                isCedulaAvailable = true;
+                            } else {
+                                cedulaFeedback.className = 'mt-2 small text-danger fw-bold d-block p-2 bg-danger-subtle border border-danger-subtle rounded-3 shadow-sm';
+                                cedulaFeedback.innerHTML = `<i class="bi bi-x-circle-fill me-1 fs-6"></i> ${data.message}`;
+                                isCedulaAvailable = false;
+                            }
+                        } catch (err) {
+                            console.error('Error al verificar cédula:', err);
+                        }
+                    }, 350);
+                });
+            }
+
             // Validar submit
             form.addEventListener('submit', (e) => {
+                if (!isCedulaAvailable) {
+                    e.preventDefault();
+                    alert('La cédula de identidad ya está registrada. Por favor, verifícala.');
+                    cedulaInput.focus();
+                    return;
+                }
+
                 if (!isUsernameAvailable) {
                     e.preventDefault();
                     alert('El nombre de usuario no está disponible. Por favor, elige un nombre de usuario diferente.');

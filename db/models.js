@@ -85,6 +85,15 @@ module.exports = {
         });
     },
 
+    async obtenerEmpleadoPorCedula(cedula) {
+        return new Promise((resolve, reject) => {
+            db.get(querys.obtenerEmpleadoPorCedula, [cedula], (err, row) => {
+                if (err) return reject(err);
+                resolve(row || null);
+            });
+        });
+    },
+
     async obtenerEmpleadoPorCorreo(correo) {
         return new Promise((resolve, reject) => {
             db.get('SELECT * FROM empleados WHERE LOWER(correo) = LOWER(?)', [correo], (err, row) => {

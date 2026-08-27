@@ -238,6 +238,28 @@ const verificarCorreoDisponibilidad = async (req, res) => {
     }
 };
 
+// GET /auth/verificar-cedula
+// ─────────────────────────────────────────────
+const verificarCedulaDisponibilidad = async (req, res) => {
+    try {
+        const cedulaInput = req.query.cedula ? parseInt(req.query.cedula) : null;
+        if (!cedulaInput || isNaN(cedulaInput)) {
+            return res.json({ available: false, message: 'Ingresa un número de cédula válido.' });
+        }
+
+        const dbModels = require('../db/models');
+        const empleadoExistente = await dbModels.obtenerEmpleadoPorCedula(cedulaInput);
+        if (empleadoExistente) {
+            return res.json({ available: false, message: 'Esta cédula ya está registrada en el sistema por otro empleado.' });
+        }
+
+        return res.json({ available: true, message: '¡Genial! Esta cédula está disponible.' });
+    } catch (error) {
+        console.error('Error verificando disponibilidad de cédula:', error);
+        return res.status(500).json({ available: false, message: 'Error al comprobar disponibilidad.' });
+    }
+};
+
 module.exports = {
     getLoginEmpleado,
     postLoginEmpleado,
@@ -245,6 +267,7 @@ module.exports = {
     postRegistroEmpleado,
     verificarUsuarioDisponibilidad,
     verificarCorreoDisponibilidad,
+    verificarCedulaDisponibilidad,
     getLogout,
     getPanelEmpleado,
     getHistorialPropio,
