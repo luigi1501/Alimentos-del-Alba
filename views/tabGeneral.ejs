@@ -191,17 +191,17 @@
 
     <!-- Modal Registrar Nuevo Empleado (ADMINISTRATIVO CON TODOS LOS CAMPOS) -->
     <div class="modal fade" id="modalNuevoEmpleado" tabindex="-1" aria-labelledby="modalNuevoEmpleadoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow-lg overflow-hidden">
-                <div class="modal-header text-white border-bottom border-warning border-3 py-3" style="background-color: #0F172A;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="max-height: 85vh; display: flex; flex-direction: column; overflow: hidden;">
+                <div class="modal-header text-white border-bottom border-warning border-3 py-3 flex-shrink-0" style="background-color: #0F172A;">
                     <h5 class="modal-title font-heading fw-bold text-white mb-0 d-flex align-items-center gap-2" id="modalNuevoEmpleadoLabel">
                         <i class="bi bi-person-plus-fill text-warning fs-4"></i>
                         <span>Registrar Empleado (Panel Administrativo)</span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="/guardarEmpleado" method="POST" class="d-flex flex-column h-100 mb-0">
-                    <div class="modal-body p-4 bg-white">
+                <form action="/guardarEmpleado" method="POST" style="display: flex; flex-direction: column; flex: 1; min-height: 0; margin-bottom: 0;">
+                    <div class="modal-body p-4 bg-white" style="overflow-y: scroll; flex: 1; min-height: 0;">
                         
                         <!-- SECCIÓN 1: DATOS PERSONALES -->
                         <div class="mb-4 p-3 rounded-3 bg-light border">
@@ -320,7 +320,7 @@
                         </div>
 
                     </div>
-                    <div class="modal-footer bg-light border-top shadow-sm py-3">
+                    <div class="modal-footer bg-light border-top shadow-sm py-3 flex-shrink-0">
                         <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-alba-emerald px-4 py-2 font-heading shadow-sm">
                             <i class="bi bi-check-circle-fill me-1"></i> Registrar Empleado Completo
