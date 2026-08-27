@@ -96,9 +96,9 @@
                     </button>
                 </div>
                 <div class="col-lg-2 col-md-12 text-lg-end">
-                    <a href="/auth/registro-empleado" class="btn btn-alba-emerald w-100">
-                        <i class="bi bi-person-plus-fill me-1"></i> Nuevo
-                    </a>
+                    <button type="button" class="btn btn-alba-emerald w-100 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoEmpleado">
+                        <i class="bi bi-person-plus-fill me-1"></i> Registrar Empleado
+                    </button>
                 </div>
             </div>
         </div>
@@ -188,6 +188,144 @@
         </div>
 
     </main>
+
+    <!-- Modal Registrar Nuevo Empleado (ADMINISTRATIVO CON TODOS LOS CAMPOS) -->
+    <div class="modal fade" id="modalNuevoEmpleado" tabindex="-1" aria-labelledby="modalNuevoEmpleadoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white border-bottom border-warning border-3">
+                    <h5 class="modal-title font-heading fw-bold" id="modalNuevoEmpleadoLabel">
+                        <i class="bi bi-person-plus-fill text-warning me-2"></i> Registrar Empleado (Panel Administrativo)
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/guardarEmpleado" method="POST">
+                    <div class="modal-body p-4">
+                        
+                        <!-- SECCIÓN 1: DATOS PERSONALES -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-success border-bottom pb-2 mb-3">
+                                <i class="bi bi-person-vcard me-1"></i> 1. Información Personal
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="admin_nombre" class="form-label small fw-bold">Nombre *</label>
+                                    <input type="text" id="admin_nombre" name="nombre" class="form-control" placeholder="Ej. Carlos" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="admin_apellido" class="form-label small fw-bold">Apellido *</label>
+                                    <input type="text" id="admin_apellido" name="apellido" class="form-control" placeholder="Ej. Mendoza" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="admin_cedula" class="form-label small fw-bold">Cédula de Identidad *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">V-</span>
+                                        <input type="number" id="admin_cedula" name="cedula" class="form-control" placeholder="Ej. 12345678" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="admin_telefono" class="form-label small fw-bold">Teléfono *</label>
+                                    <input type="number" id="admin_telefono" name="telefono" class="form-control" placeholder="Ej. 04141234567" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 2: INFORMACIÓN LABORAL Y ASIGNACIÓN DE JORNADA -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-amber border-bottom pb-2 mb-3">
+                                <i class="bi bi-briefcase-fill me-1"></i> 2. Cargo, Jornada y Estatus Inicial
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="admin_cargo" class="form-label small fw-bold">Cargo *</label>
+                                    <input type="text" id="admin_cargo" name="cargo" class="form-control" placeholder="Ej. Operador de Planta" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="admin_departamento" class="form-label small fw-bold">Departamento *</label>
+                                    <input type="text" id="admin_departamento" name="departamento" class="form-control" placeholder="Ej. Producción" required>
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="admin_tipo_jornada" class="form-label small fw-bold text-primary">
+                                        <i class="bi bi-clock-history me-1"></i> Tipo de Jornada y Días de Trabajo *
+                                    </label>
+                                    <input type="text" id="admin_tipo_jornada" name="tipo_jornada" class="form-control" placeholder="Ej. Lunes a Viernes (8:00 AM - 5:00 PM)" value="Lunes a Viernes (8:00 AM - 5:00 PM)" required>
+                                    <div class="form-text small text-muted">
+                                        Asigna el horario para habilitar el Código QR de marcaje del empleado de inmediato.
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="admin_estatus_empleado" class="form-label small fw-bold text-danger">
+                                        <i class="bi bi-person-check me-1"></i> Estatus Inicial del Empleado *
+                                    </label>
+                                    <select id="admin_estatus_empleado" name="estatus_empleado" class="form-select" required>
+                                        <option value="Activo" selected>✅ Activo (QR Habilitado de inmediato)</option>
+                                        <option value="De Vacaciones">🏖️ De Vacaciones</option>
+                                        <option value="En Reposo Médico">🏥 En Reposo Médico</option>
+                                        <option value="Permiso Especial">📋 Permiso Especial</option>
+                                        <option value="Suspendido">🚫 Suspendido</option>
+                                        <option value="Baja Temporal">⏸️ Baja Temporal</option>
+                                        <option value="Inactivo">🔴 Inactivo</option>
+                                    </select>
+                                </div>
+
+                                <!-- Detalle del Estatus (Fechas y Observación) -->
+                                <div id="modal-detalle-estatus" class="col-md-12 d-none">
+                                    <div class="card border-warning-subtle bg-warning-subtle p-3">
+                                        <p class="small fw-bold text-warning-emphasis mb-2">
+                                            <i class="bi bi-calendar-range me-1"></i> Período del Estatus Específico
+                                        </p>
+                                        <div class="row g-2">
+                                            <div class="col-md-4">
+                                                <label for="admin_estatus_desde" class="form-label small">Desde</label>
+                                                <input type="date" id="admin_estatus_desde" name="estatus_desde" class="form-control form-control-sm">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="admin_estatus_hasta" class="form-label small">Hasta</label>
+                                                <input type="date" id="admin_estatus_hasta" name="estatus_hasta" class="form-control form-control-sm">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="admin_estatus_observacion" class="form-label small">Motivo / Observación</label>
+                                                <input type="text" id="admin_estatus_observacion" name="estatus_observacion" class="form-control form-control-sm" placeholder="Ej. Reposo médico entregado">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 3: CREDENCIALES DE ACCESO -->
+                        <div>
+                            <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">
+                                <i class="bi bi-shield-lock-fill me-1"></i> 3. Credenciales de Cuenta y Acceso
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="admin_usuario" class="form-label small fw-bold">Usuario *</label>
+                                    <input type="text" id="admin_usuario" name="usuario" class="form-control" placeholder="Ej. cmendoza" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="admin_correo" class="form-label small fw-bold">Correo Electrónico *</label>
+                                    <input type="email" id="admin_correo" name="correo" class="form-control" placeholder="carlos@alimentosdelalba.com" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="admin_password" class="form-label small fw-bold">Contraseña *</label>
+                                    <input type="password" id="admin_password" name="password" class="form-control" placeholder="••••••••" required>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-alba-emerald px-4">
+                            <i class="bi bi-check-circle-fill me-1"></i> Registrar Empleado Completo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -293,6 +431,19 @@
                         });
                 });
             });
+
+            // Toggle detalle de estatus en Modal Administrativo
+            const selectEstatusAdmin = document.getElementById('admin_estatus_empleado');
+            const detalleEstatusAdmin = document.getElementById('modal-detalle-estatus');
+            if (selectEstatusAdmin && detalleEstatusAdmin) {
+                selectEstatusAdmin.addEventListener('change', function() {
+                    if (this.value && this.value !== 'Activo') {
+                        detalleEstatusAdmin.classList.remove('d-none');
+                    } else {
+                        detalleEstatusAdmin.classList.add('d-none');
+                    }
+                });
+            }
         });
     </script>
 </body>
