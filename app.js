@@ -4,14 +4,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const multer = require('multer');
-const SQLiteStore = require('better-sqlite3-session-store')(session);
-const Database = require('better-sqlite3');
-
-// ── Configurar ruta de base de datos para Vercel ──────────────
-const dbPath = process.env.NODE_ENV === 'production' 
-    ? '/tmp/sessions.db' 
-    : path.join(__dirname, 'db', 'sessions.db');
-const sessionDb = new Database(dbPath);
+const MemoryStore = require('memorystore')(session);
 
 dotenv.config({ override: true });
 
@@ -31,12 +24,8 @@ require('./db/models');
 
 // ── Sesiones ───────────────────────────────────────────────────
 app.use(session({
-    store: new SQLiteStore({
-        client: sessionDb,
-        expired: {
-            clear: true,
-            intervalMs: 15 * 60 * 1000
-        }
+    store: new MemoryStore({
+        checkPeriod: 86400000 // Podar entradas expiradas cada 24h
     }),
     secret: process.env.SESSION_SECRET || 'una_cadena_secreta_de_respaldo',
     resave: false,

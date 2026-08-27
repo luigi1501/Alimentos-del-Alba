@@ -3,28 +3,84 @@ const path = require('path');
 const fs = require('fs');
 const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
+const cloudinary = require('../config/cloudinary');
+const https = require('https');
+const http = require('http');
+
+// Helper: subir buffer a Cloudinary
+const uploadToCloudinary = (fileBuffer, userId) => {
+    return new Promise((resolve, reject) => {
+        if (!process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME.trim() === '') {
+            return reject(new Error('Credenciales de Cloudinary no configuradas en .env'));
+        }
+        const stream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'alimentos-del-alba/perfiles',
+                public_id: `perfil-${userId}-${Date.now()}`,
+                overwrite: true,
+                transformation: [
+                    { width: 400, height: 400, crop: 'fill', gravity: 'face' }
+                ]
+            },
+            (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            }
+        );
+        stream.end(fileBuffer);
+    });
+};
+
+// Helper: obtener buffer de imagen (local o remoto via URL)
+const fetchImageBuffer = async (imagePathOrUrl) => {
+    if (!imagePathOrUrl) return null;
+    if (imagePathOrUrl.startsWith('http://') || imagePathOrUrl.startsWith('https://')) {
+        return new Promise((resolve) => {
+            const protocol = imagePathOrUrl.startsWith('https') ? https : http;
+            protocol.get(imagePathOrUrl, (res) => {
+                if (res.statusCode !== 200) return resolve(null);
+                const data = [];
+                res.on('data', chunk => data.push(chunk));
+                res.on('end', () => resolve(Buffer.concat(data)));
+                res.on('error', () => resolve(null));
+            }).on('error', () => resolve(null));
+        });
+    } else {
+        const cleanPath = imagePathOrUrl.replace(/^\/+/, '');
+        const potentialPath = path.join(__dirname, '..', 'public', cleanPath);
+        if (fs.existsSync(potentialPath)) {
+            return fs.readFileSync(potentialPath);
+        }
+    }
+    return null;
+};
 
 const uploadProfilePhoto = async (req, res) => {
     try {
-        if (!req.file) {
+        if (!req.file || !req.file.buffer) {
             req.session.message = { type: 'danger', text: 'No se seleccionó ninguna imagen.' };
             return res.redirect('/auth/panel-empleado');
         }
 
         const userId = req.session.userId;
-        const newPhotoPath = '/uploads/' + req.file.filename;
+        let newPhotoPath;
+
+        if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_CLOUD_NAME.trim() !== '') {
+            const uploadResult = await uploadToCloudinary(req.file.buffer, userId);
+            newPhotoPath = uploadResult.secure_url;
+        } else {
+            req.session.message = { type: 'danger', text: 'Cloudinary no está configurado. Agrega tus credenciales en el archivo .env' };
+            return res.redirect('/auth/panel-empleado');
+        }
 
         await db.updateEmpleadoFotoPerfil(userId, newPhotoPath);
 
-        req.session.message = { type: 'success', text: 'Foto de perfil actualizada exitosamente.' };
+        req.session.message = { type: 'success', text: 'Foto de perfil actualizada exitosamente en Cloudinary.' };
         res.redirect('/auth/panel-empleado');
 
     } catch (error) {
-        console.error('Error al subir la foto de perfil:', error);
-        if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
-        req.session.message = { type: 'danger', text: 'Hubo un error al actualizar la foto de perfil.' };
+        console.error('Error al subir la foto de perfil a Cloudinary:', error);
+        req.session.message = { type: 'danger', text: 'Hubo un error al actualizar la foto de perfil: ' + error.message };
         res.redirect('/auth/panel-empleado');
     }
 };
@@ -105,22 +161,18 @@ const downloadQrPdf = async (req, res) => {
         doc.roundedRect(photoX - 1, photoY - 1, photoWidth + 2, photoHeight + 2, 7)
            .stroke('#D97706');
 
-        let userPhotoPath = null;
+        let userPhotoBuffer = null;
         if (empleado.foto_perfil) {
-            const cleanPath = empleado.foto_perfil.replace(/^\/+/, '');
-            const potentialPath = path.join(__dirname, '..', 'public', cleanPath);
-            if (fs.existsSync(potentialPath)) {
-                userPhotoPath = potentialPath;
-            }
+            userPhotoBuffer = await fetchImageBuffer(empleado.foto_perfil);
         }
-        if (!userPhotoPath && fs.existsSync(logoPath)) {
-            userPhotoPath = logoPath;
+        if (!userPhotoBuffer && fs.existsSync(logoPath)) {
+            userPhotoBuffer = fs.readFileSync(logoPath);
         }
 
-        if (userPhotoPath) {
+        if (userPhotoBuffer) {
             doc.save();
             doc.roundedRect(photoX, photoY, photoWidth, photoHeight, 6).clip();
-            doc.image(userPhotoPath, photoX, photoY, {
+            doc.image(userPhotoBuffer, photoX, photoY, {
                 cover: [photoWidth, photoHeight],
                 align: 'center',
                 valign: 'center'
